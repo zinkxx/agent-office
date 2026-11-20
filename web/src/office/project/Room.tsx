@@ -6,6 +6,7 @@ import { ambientBoost, pickPointLights } from '../power.ts';
 import type { OfficePlan } from '../sim/plan.ts';
 import type { OfficeTheme } from '../themes.ts';
 import type { OfficeSim } from '../sim/sim.ts';
+import type { BrandId } from '../brand.ts';
 import {
   BRAND,
   brandIconTexture,
@@ -259,18 +260,26 @@ function DecalMesh({
  * DevTechnic marka yüzeyleri: marka duvarındaki ışıklı logo ve yazı, lider köşesindeki plaket, dinlenme
  * alanındaki neon simge, karşılama totemi, giriş paspası ve mutfak karosu. Dokular yerel dosyalardan üretilir.
  */
-export function BrandSurfaces({ layout, theme }: { layout: FurnitureLayout; theme: OfficeTheme }) {
+export function BrandSurfaces({
+  layout,
+  theme,
+  brand,
+}: {
+  layout: FurnitureLayout;
+  theme: OfficeTheme;
+  brand: BrandId;
+}) {
   const b = layout.brand;
   const night = theme.night;
   const tiles = layout.tiles;
   return (
     <group>
-      <DecalMesh d={b.logo} map={brandLogoTexture('gold')} glow={night ? 1.75 : 1.05} />
-      <DecalMesh d={b.word} map={brandWordTexture('#e2e8f0')} glow={night ? 1.15 : 0.95} />
-      <DecalMesh d={b.plaque} map={brandPlaqueTexture()} glow={night ? 1.05 : 0.95} />
-      <DecalMesh d={b.neon} map={brandIconTexture()} glow={night ? 2.4 : 1.2} />
-      <DecalMesh d={b.totem} map={brandIconTexture()} glow={night ? 1.8 : 1.1} />
-      <DecalMesh d={b.mat} map={entranceMatTexture()} lit floor />
+      <DecalMesh d={b.logo} map={brandLogoTexture(brand)} glow={night ? 1.75 : 1.05} />
+      <DecalMesh d={b.word} map={brandWordTexture('#e2e8f0', brand)} glow={night ? 1.15 : 0.95} />
+      <DecalMesh d={b.plaque} map={brandPlaqueTexture(brand)} glow={night ? 1.05 : 0.95} />
+      <DecalMesh d={b.neon} map={brandIconTexture(brand)} glow={night ? 2.4 : 1.2} />
+      <DecalMesh d={b.totem} map={brandIconTexture(brand)} glow={night ? 1.8 : 1.1} />
+      <DecalMesh d={b.mat} map={entranceMatTexture(brand)} lit floor />
       <DecalMesh d={tiles} map={tileTexture()} lit repeat={[tiles.w / 0.6, tiles.h / 0.3]} />
     </group>
   );

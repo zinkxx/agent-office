@@ -6,6 +6,7 @@ import {
   SRGBColorSpace,
   type Texture,
 } from 'three';
+import { brandTexts, type BrandId } from './brand.ts';
 import type { OfficeTheme } from './themes.ts';
 
 /**
@@ -318,16 +319,64 @@ function spacedText(
 
 const BRAND_FONT = `"Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif`;
 
-/** Marka duvarındaki logo: saydam zeminde altın (ya da lacivert) logo. 2:1. */
-export function brandLogoTexture(variant: 'gold' | 'navy' = 'gold'): Texture {
-  const url = variant === 'gold' ? '/brand/devtechnic-logo.svg' : '/brand/devtechnic-logo-navy.svg';
-  return svgTexture(`brand-logo-${variant}`, url, 1024, 512, (g, img) => {
-    if (img) g.drawImage(img, 0, 0, 1024, 512);
+/** Sade marka simgesi: yuvarlak köşeli kare içinde üç yatay çizgi (camgöbeği). */
+function paintSimpleIcon(g: CanvasRenderingContext2D, x: number, y: number, size: number): void {
+  const r = size * 0.22;
+  g.save();
+  g.fillStyle = BRAND.navy;
+  g.strokeStyle = BRAND.teal;
+  g.lineWidth = size * 0.04;
+  g.beginPath();
+  g.roundRect(x + g.lineWidth, y + g.lineWidth, size - 2 * g.lineWidth, size - 2 * g.lineWidth, r);
+  g.fill();
+  g.stroke();
+  g.lineWidth = size * 0.07;
+  g.lineCap = 'round';
+  for (const f of [0.34, 0.5, 0.66]) {
+    g.beginPath();
+    g.moveTo(x + size * 0.27, y + size * f);
+    g.lineTo(x + size * 0.73, y + size * f);
+    g.stroke();
+  }
+  g.restore();
+}
+
+/** Marka dokusu: DevTechnic'te yerel SVG'den, sade markada kanvasla çizilir (dosya yüklenmez). */
+function brandTexture(
+  brand: BrandId,
+  key: string,
+  w: number,
+  h: number,
+  svgUrl: string | null,
+  paint: (g: CanvasRenderingContext2D, img: HTMLImageElement | null) => void,
+): Texture {
+  if (brand === 'devtechnic' && svgUrl) return svgTexture(`${key}-dt`, svgUrl, w, h, paint);
+  return once(`${key}-sade`, () => {
+    const [c, g] = canvas(w, h);
+    paint(g, null);
+    return texture(c);
   });
 }
 
-/** "DevTechnic" yazısı (harf aralıklı, büyük harf). 8:1, saydam zemin. */
-export function brandWordTexture(color: string, text = 'DEVTECHNIC'): Texture {
+const ICON_URL = '/brand/devtechnic-icon.svg';
+
+/** Marka duvarındaki logo: saydam zeminde altın logo (sade markada simge + yazı). 2:1. */
+export function brandLogoTexture(brand: BrandId = 'sade'): Texture {
+  return brandTexture(brand, 'brand-logo', 1024, 512, '/brand/devtechnic-logo.svg', (g, img) => {
+    if (brand === 'devtechnic') {
+      if (img) g.drawImage(img, 0, 0, 1024, 512);
+      return;
+    }
+    paintSimpleIcon(g, 352, 70, 320);
+    g.fillStyle = '#ffffff';
+    g.font = `600 84px ${BRAND_FONT}`;
+    spacedText(g, brandTexts(brand).word, 512, 440, 18);
+  });
+}
+
+/** Marka yazısı (harf aralıklı, büyük harf). 8:1, saydam zemin. */
+export function brandWordTexture(color: string, brand: BrandId = 'sade'): Texture {
+  const text = brandTexts(brand).word;
   return once(`brand-word-${color}-${text}`, () => {
     const [c, g] = canvas(1024, 128);
     g.fillStyle = color;
@@ -337,34 +386,54 @@ export function brandWordTexture(color: string, text = 'DEVTECHNIC'): Texture {
   });
 }
 
-/** Sunucu dolabı simgesi (camgöbeği çizgiler), saydam zemin. Kare. */
-export function brandIconTexture(): Texture {
-  return svgTexture('brand-icon', '/brand/devtechnic-icon.svg', 256, 256, (g, img) => {
-    if (img) g.drawImage(img, 0, 0, 256, 256);
+/** Neon/totem simgesi, saydam zemin. Kare. */
+export function brandIconTexture(brand: BrandId = 'sade'): Texture {
+  return brandTexture(brand, 'brand-icon', 256, 256, ICON_URL, (g, img) => {
+    if (brand === 'devtechnic') {
+      if (img) g.drawImage(img, 0, 0, 256, 256);
+      return;
+    }
+    paintSimpleIcon(g, 16, 16, 224);
   });
 }
 
-/** Lider köşesindeki plaket: lacivert zemin, altın çerçeve, simge ve yazı. 3:2. */
-export function brandPlaqueTexture(): Texture {
-  return svgTexture('brand-plaque', '/brand/devtechnic-icon.svg', 480, 320, (g, img) => {
+function paintEmblem(
+  g: CanvasRenderingContext2D,
+  brand: BrandId,
+  img: HTMLImageElement | null,
+  x: number,
+  y: number,
+  size: number,
+): void {
+  if (brand === 'devtechnic') {
+    if (img) g.drawImage(img, x, y, size, size);
+  } else paintSimpleIcon(g, x, y, size);
+}
+
+/** Lider köşesindeki plaket: lacivert zemin, çerçeve, simge ve yazı. 3:2. */
+export function brandPlaqueTexture(brand: BrandId = 'sade'): Texture {
+  const accent = brand === 'devtechnic' ? BRAND.gold : BRAND.teal;
+  return brandTexture(brand, 'brand-plaque', 480, 320, ICON_URL, (g, img) => {
     g.fillStyle = BRAND.navy;
     g.fillRect(0, 0, 480, 320);
-    g.strokeStyle = BRAND.gold;
+    g.strokeStyle = accent;
     g.lineWidth = 6;
     g.strokeRect(14, 14, 452, 292);
-    if (img) g.drawImage(img, 170, 42, 140, 140);
-    g.fillStyle = BRAND.gold;
+    paintEmblem(g, brand, img, 170, 42, 140);
+    const t = brandTexts(brand);
+    g.fillStyle = brand === 'devtechnic' ? BRAND.gold : '#ffffff';
     g.font = `600 38px ${BRAND_FONT}`;
-    spacedText(g, 'DEVTECHNIC', 240, 230, 9);
+    spacedText(g, t.word, 240, 230, 9);
     g.fillStyle = 'rgba(226, 232, 240, 0.75)';
     g.font = `400 20px ${BRAND_FONT}`;
-    spacedText(g, 'DATA CENTER · YAZILIM', 240, 270, 4);
+    spacedText(g, t.tagline, 240, 270, 4);
   });
 }
 
-/** Giriş paspası: lacivert zemin, altın kenar, simge ve "HOŞ GELDİNİZ". Kare. */
-export function entranceMatTexture(): Texture {
-  return svgTexture('brand-mat', '/brand/devtechnic-icon.svg', 384, 384, (g, img) => {
+/** Giriş paspası: lacivert zemin, kenar, simge ve "HOŞ GELDİNİZ". Kare. */
+export function entranceMatTexture(brand: BrandId = 'sade'): Texture {
+  const accent = brand === 'devtechnic' ? BRAND.gold : BRAND.teal;
+  return brandTexture(brand, 'brand-mat', 384, 384, ICON_URL, (g, img) => {
     g.fillStyle = BRAND.navy;
     g.fillRect(0, 0, 384, 384);
     const r = rng(9);
@@ -372,16 +441,16 @@ export function entranceMatTexture(): Texture {
       g.fillStyle = `rgba(255,255,255,${r() * 0.035})`;
       g.fillRect(r() * 384, r() * 384, 2, 2);
     }
-    g.strokeStyle = BRAND.gold;
+    g.strokeStyle = accent;
     g.lineWidth = 8;
     g.strokeRect(16, 16, 352, 352);
-    if (img) g.drawImage(img, 122, 70, 140, 140);
-    g.fillStyle = BRAND.gold;
+    paintEmblem(g, brand, img, 122, 70, 140);
+    g.fillStyle = brand === 'devtechnic' ? BRAND.gold : '#ffffff';
     g.font = `600 30px ${BRAND_FONT}`;
     spacedText(g, 'HOŞ GELDİNİZ', 192, 266, 5);
     g.fillStyle = 'rgba(226, 232, 240, 0.7)';
     g.font = `500 22px ${BRAND_FONT}`;
-    spacedText(g, 'DEVTECHNIC', 192, 306, 6);
+    spacedText(g, brandTexts(brand).word, 192, 306, 6);
   });
 }
 

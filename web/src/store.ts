@@ -11,6 +11,7 @@ import {
   type Settings,
 } from './settings.ts';
 import { SoundPlayer, soundCues } from './sound.ts';
+import type { BrandId } from './office/brand.ts';
 import { cssVariables, themeById, type OfficeTheme, type ThemeId } from './office/themes.ts';
 
 /** Temanın arayüz renklerini sayfaya uygular (CSS değişkenleri). */
@@ -237,6 +238,28 @@ export function parseServerMessage(data: unknown): OfficeSnapshot | null {
   return null;
 }
 
+/** Gelen anlık görüntüyü işler: akış, ses ipuçları, saat farkı, seçim. WebSocket ve statik demo ortak kullanır. */
+export function applySnapshot(snapshot: OfficeSnapshot): void {
+  const state = useOffice.getState();
+  const selectedId = state.selectedId;
+  const stillThere = selectedId && snapshot.agents.some((a) => a.id === selectedId);
+  const fresh = newFeedItems(state.snapshot, snapshot);
+  if (state.settings.sound) {
+    // En önemli uyarı çalar; aynı anda birkaç ses üst üste binmesin.
+    const cue = soundCues(state.snapshot, snapshot)[0];
+    if (cue) sounds.play(cue, state.settings.volume);
+  }
+  useOffice.setState({
+    snapshot,
+    ...(fresh.length > 0 ? { feed: appendFeed(state.feed, fresh) } : {}),
+    clockOffset: snapshot.now - Date.now(),
+    ...(selectedId && !stillThere ? { selectedId: null } : {}),
+  });
+}
+
+/** Derleme bayrağı VITE_STATIC_DEMO=1: sunucu yok, demo tarayıcıda çalışır (GitHub Pages). */
+export const STATIC_DEMO = import.meta.env.VITE_STATIC_DEMO === '1';
+
 let started = false;
 
 /** Sunucuya bağlanır; koparsa artan aralıklarla (1 sn → en fazla 5 sn) yeniden dener. Bir kez çağrılır. */
@@ -260,22 +283,7 @@ export function startConnection(): void {
     };
     socket.onmessage = (event) => {
       const snapshot = parseServerMessage(event.data);
-      if (!snapshot) return;
-      const state = useOffice.getState();
-      const selectedId = state.selectedId;
-      const stillThere = selectedId && snapshot.agents.some((a) => a.id === selectedId);
-      const fresh = newFeedItems(state.snapshot, snapshot);
-      if (state.settings.sound) {
-        // En önemli uyarı çalar; aynı anda birkaç ses üst üste binmesin.
-        const cue = soundCues(state.snapshot, snapshot)[0];
-        if (cue) sounds.play(cue, state.settings.volume);
-      }
-      useOffice.setState({
-        snapshot,
-        ...(fresh.length > 0 ? { feed: appendFeed(state.feed, fresh) } : {}),
-        clockOffset: snapshot.now - Date.now(),
-        ...(selectedId && !stillThere ? { selectedId: null } : {}),
-      });
+      if (snapshot) applySnapshot(snapshot);
     };
     socket.onclose = () => scheduleRetry();
     // Hata olayının ardından her zaman close gelir; yeniden deneme orada.
@@ -289,7 +297,10 @@ export function startConnection(): void {
     setTimeout(connect, delay);
   };
 
-  connect();
+  if (STATIC_DEMO) {
+    useOffice.setState({ connection: 'open' });
+    void import('./staticDemo.ts').then((m) => m.runStaticDemo(applySnapshot));
+  } else connect();
 
   // "Hareketi azalt" ayarı değişirse hemen uygula.
   try {
@@ -317,6 +328,10 @@ export function useRoleLook(role: AgentRole): RoleLook | undefined {
 }
 
 /** Seçili tema (sahne bileşenleri için). */
+export function useBrand(): BrandId {
+  return useOffice((s) => s.settings.brand);
+}
+
 export function useTheme(): OfficeTheme {
   return themeById(useOffice((s) => s.settings.theme));
 }

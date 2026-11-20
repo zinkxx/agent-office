@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { Vector3 } from 'three';
 import type { Agent, AgentRole, Letter, TeamMember } from '../../../../shared/types.ts';
 import { ROLE_COLOR, ROLE_GROUP_LABEL } from '../../labels.ts';
-import { useOffice, useTheme } from '../../store.ts';
+import { useBrand, useOffice, useTheme } from '../../store.ts';
 import { frameBox, frameOffice } from '../framing.ts';
 import { Label } from '../Label.tsx';
 import type { ScreenBank } from '../screens.ts';
@@ -193,6 +193,7 @@ export function ProjectScene({
   const roleFilter = useOffice((s) => s.roleFilter);
   const scene = useThree((s) => s.scene);
   const theme = useTheme();
+  const brand = useBrand();
 
   // Kat planı: önceki atamalar korunur (karakterler yer değiştirmesin).
   const planRef = useRef<OfficePlan | null>(null);
@@ -230,7 +231,7 @@ export function ProjectScene({
 
   // Mobilyalar yalnızca odanın biçimi değişince yeniden kurulur.
   const layoutRef = useRef<{ key: string; layout: FurnitureLayout } | null>(null);
-  const furnitureKey = `${plan.shapeKey}|${theme.id}`;
+  const furnitureKey = `${plan.shapeKey}|${theme.id}|${brand}`;
   if (!layoutRef.current || layoutRef.current.key !== furnitureKey) {
     layoutRef.current = { key: furnitureKey, layout: buildFurniture(plan, theme) };
   }
@@ -342,7 +343,7 @@ export function ProjectScene({
         <Door layout={layout} sim={sim} reduced={reduced} theme={theme} />
         <Exterior plan={plan} theme={theme} reduced={reduced} />
         <Tower plan={plan} theme={theme} />
-        <BrandSurfaces layout={layout} theme={theme} />
+        <BrandSurfaces layout={layout} theme={theme} brand={brand} />
         <Screens spots={layout.screens} plan={plan} agents={agents} sim={sim} bank={bank} reduced={reduced} />
         <TechOps plan={plan} agents={agents} team={team} sim={sim} reduced={reduced} />
         {agents.map((a) => (

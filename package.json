@@ -14,6 +14,7 @@
   "scripts": {
     "start": "concurrently -k -n sunucu,arayuz -c magenta,cyan \"npm:dev -w server\" \"npm:dev -w web\"",
     "demo": "AJAN_OFISI_DEMO=dolu npm start",
+    "build:demo": "VITE_STATIC_DEMO=1 npm run build -w web -- --base=/agent-office/",
     "test": "vitest run",
     "typecheck": "tsc -p server --noEmit && tsc -p web --noEmit",
     "format": "prettier --write .",
@@ -30,5 +31,11 @@
   },
   "overrides": {
     "@types/three": "0.170.0"
-  }
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zinkxx/agent-office.git"
+  },
+  "homepage": "https://zinkxx.github.io/agent-office/"
 }

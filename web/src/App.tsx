@@ -15,7 +15,8 @@ import { Office } from './office/Office.tsx';
 import { visibleAgents } from './settings.ts';
 import { EditLayoutButton, LayoutBar } from './LayoutBar.tsx';
 import { SettingsButton, SettingsPanel } from './SettingsPanel.tsx';
-import { useCurrentView, useOffice, useTheme } from './store.ts';
+import { brandTexts } from './office/brand.ts';
+import { STATIC_DEMO, useBrand, useCurrentView, useOffice, useTheme } from './store.ts';
 import { ALL_PROJECTS, projectsOf, viewKey } from './view.ts';
 
 function ConnectionBadge() {
@@ -205,6 +206,7 @@ export function App() {
   const hasData = useOffice((s) => s.snapshot !== null);
   const reduced = useOffice((s) => s.reducedMotion);
   const themeName = useTheme().name;
+  const brandInfo = brandTexts(useBrand());
 
   return (
     <div className={`app${panelOpen ? ' panel-open' : ''}${reduced ? ' reduce-motion' : ''}`}>
@@ -222,11 +224,24 @@ export function App() {
       </div>
 
       <header className="topbar glass">
-        <h1 title="DevTechnic · Ajan Ofisi">
-          <img className="brand-icon" src="/brand/devtechnic-icon.svg" alt="" width="22" height="22" />
-          Ajan Ofisi <span className="brand-name">DevTechnic</span>
+        <h1 title={brandInfo.title}>
+          {brandInfo.icon && (
+            <img className="brand-icon" src={brandInfo.icon} alt="" width="22" height="22" />
+          )}
+          Ajan Ofisi {brandInfo.suffix && <span className="brand-name">{brandInfo.suffix}</span>}
           <span className="theme-name">{themeName}</span>
         </h1>
+        {STATIC_DEMO && (
+          <a
+            className="demo-badge"
+            href="https://github.com/zinkxx/agent-office"
+            target="_blank"
+            rel="noreferrer"
+            title="GitHub deposunu aç"
+          >
+            Canlı demo · uydurma veriler
+          </a>
+        )}
         <ConnectionBadge />
         {hasData && <ProjectPicker />}
         {connected && <Summary />}

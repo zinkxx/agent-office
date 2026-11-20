@@ -1300,3 +1300,17 @@ button:disabled {
     left: 50%;
   }
 }
+
+.demo-badge {
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  font-size: 12px;
+  white-space: nowrap;
+  text-decoration: none;
+  color: inherit;
+  opacity: 0.85;
+}
+.demo-badge:hover {
+  opacity: 1;
+}

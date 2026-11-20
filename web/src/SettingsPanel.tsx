@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { AGENT_ROLES, type AgentRole } from '../../shared/types.ts';
 import { ROLE_COLOR, ROLE_LABEL } from './labels.ts';
 import { MASCOT_KINDS, type MascotKind } from './office/sim/mascot.ts';
+import type { BrandId } from './office/brand.ts';
 import { THEMES } from './office/themes.ts';
 import { MASCOT_LABEL, OUTFIT_COLORS, type MotionPref, type RoleLook } from './settings.ts';
 import { CUE_LABEL, type Cue } from './sound.ts';
@@ -41,6 +42,11 @@ function Switch({
     </div>
   );
 }
+
+const BRAND_OPTIONS: { value: BrandId; label: string }[] = [
+  { value: 'sade', label: 'Sade' },
+  { value: 'devtechnic', label: 'DevTechnic' },
+];
 
 const MOTION_OPTIONS: { value: MotionPref; label: string }[] = [
   { value: 'system', label: 'Sistem gibi' },
@@ -288,6 +294,25 @@ export function SettingsPanel() {
             ))}
           </div>
           <p className="setting-hint">{THEMES.find((t) => t.id === settings.theme)?.description}</p>
+        </div>
+        <div className="setting-item">
+          <span className="setting-label" id={`${titleId}-brand`}>
+            Marka
+          </span>
+          <div className="segmented" role="radiogroup" aria-labelledby={`${titleId}-brand`}>
+            {BRAND_OPTIONS.map((o) => (
+              <label key={o.value} className={settings.brand === o.value ? 'on' : ''}>
+                <input
+                  type="radio"
+                  name="brand"
+                  value={o.value}
+                  checked={settings.brand === o.value}
+                  onChange={() => update({ brand: o.value })}
+                />
+                {o.label}
+              </label>
+            ))}
+          </div>
         </div>
         <div className="setting-item">
           <span className="setting-label" id={`${titleId}-motion`}>

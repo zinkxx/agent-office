@@ -1,328 +1,234 @@
 <div align="center">
 
-# 🏢 Ajan Ofisi
+# 🏢 Agent Office (Ajan Ofisi)
 
-**Bilgisayarında çalışan Claude Code oturumlarını ve yardımcı ajanlarını, DevTechnic'in canlı 3B ofisinde
-karakterler olarak gösteren, tamamen yerel bir uygulama.**
+**See your Claude Code sessions and sub-agents work in a live 3D office — 100% local, nothing leaves your machine.**
 
 ![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![Three.js](https://img.shields.io/badge/Three.js-r170-000000?logo=threedotjs&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
-![Vitest](https://img.shields.io/badge/testler-221%20geçiyor-6E9F18?logo=vitest&logoColor=white)
-![Gizlilik](https://img.shields.io/badge/veri-yalnızca%20127.0.0.1-8B1E3F)
+![Vitest](https://img.shields.io/badge/tests-244%20passing-6E9F18?logo=vitest&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Live demo](https://img.shields.io/badge/Live%20demo-open-eab308)](https://zinkxx.github.io/agent-office/)
+![Privacy](https://img.shields.io/badge/data-127.0.0.1%20only-8B1E3F)
 
-[English](README.en.md) · [Yol haritası](PLAN.md) · [Kayıt biçimi](docs/veri-bicimi.md) ·
-[Sürüm 3 tasarımı](docs/tasarim-v3.md)
+**English** · [Türkçe](README.tr.md) · [Roadmap (TR)](PLAN.md) · [Log format (TR)](docs/veri-bicimi.md)
 
-![Ajan Ofisi: proje ofisi görünümü](docs/ekran-goruntuleri/proje-ofisi.png)
+![Agent Office demo: Claude Code sessions as characters in a 3D office](docs/demo.gif)
+
+**[Try the live demo](https://zinkxx.github.io/agent-office/)**
 
 </div>
 
----
+> The user interface is in Turkish. A Turkish version of this document is available: [README.tr.md](README.tr.md).
 
-## İçindekiler
+## Quick start
 
-- [Nedir?](#nedir)
-- [Ekran görüntüleri](#ekran-görüntüleri)
-- [Özellikler](#özellikler)
-- [Gizlilik ve güvenlik](#gizlilik-ve-güvenlik)
-- [Kurulum ve çalıştırma](#kurulum-ve-çalıştırma)
-- [Kullanım](#kullanım)
-- [Komutlar ve ortam değişkenleri](#komutlar-ve-ortam-değişkenleri)
-- [Mimari](#mimari)
-- [Proje yapısı](#proje-yapısı)
-- [Geliştirme ve testler](#geliştirme-ve-testler)
-- [Yol haritası](#yol-haritası)
+```bash
+git clone https://github.com/zinkxx/agent-office.git && cd agent-office
+npm install
+npm start   # opens http://127.0.0.1:5174  (or `npm run demo` for a lively fake office)
+```
 
-## Nedir?
+Needs [Node.js](https://nodejs.org/) 22+. See [Getting started](#getting-started) for details.
 
-Claude Code ile çalışırken arka planda neler olduğunu görmek zordur: hangi oturum ne yapıyor, hangi yardımcı ajan
-(alt ajan) başladı, kim kime mesaj attı, kim senden cevap bekliyor? **Ajan Ofisi**, Claude Code'un bilgisayarına
-yazdığı kayıt dosyalarını (`~/.claude`) **yalnızca okuyarak** bu bilgiyi canlı bir ofise dönüştürür:
+## What is it?
 
-- Her Claude Code oturumu bir **takım lideri**, başlattığı her yardımcı ajan bir **ekip üyesi** olur.
-- Karakterler o anda yaptıkları işe göre davranır: düşünür, yazar, okur, terminal kullanır, toplantıya gider, kahve
-  alır, rapor verir.
-- Her proje kendi ofisinde çalışır; **Tüm projeler** görünümünde projeler cam duvarlı küçük odalar olarak yan yana
-  durur.
+While working with Claude Code it is hard to see what is happening in the background: which session is doing what,
+which sub-agent just started, who messaged whom, who is waiting for your answer? **Agent Office** turns this into a
+living office by **only reading** the log files Claude Code writes to your machine (`~/.claude`):
 
-Hiçbir veri bilgisayarından dışarı çıkmaz; mesaj, kod ve komut içerikleri hiçbir zaman gösterilmez.
+- Every Claude Code session becomes a **team lead**; every sub-agent it spawns becomes a **team member**.
+- Characters act out what they are doing right now: thinking, writing, reading, using the terminal, walking over to
+  a colleague, grabbing coffee, reporting back.
+- Each project gets its own office; the **All projects** view shows projects as small glass-walled rooms.
 
-## Ekran görüntüleri
+No data ever leaves your computer, and message, code and command contents are never displayed.
 
-> Tüm görüntüler `npm run demo` ile, **uydurma** verilerle alınmıştır.
+## Screenshots
 
-| **DevTechnic marka duvarı**                                    | **Dinlenme alanı**                                                                |
-| -------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| ![Marka duvarı](docs/ekran-goruntuleri/marka-duvari.png)       | ![Dinlenme alanı](docs/ekran-goruntuleri/dinlenme-alani.png)                      |
-| **Proje ofisi ve ajan paneli**                                 | **Ajan ayrıntıları (kamera takibi)**                                              |
-| ![Ajan paneli açık](docs/ekran-goruntuleri/ajan-paneli.png)    | ![Detay paneli](docs/ekran-goruntuleri/detay-paneli.png)                          |
-| **Tüm projeler**                                               | **Düzen düzenleyicisi**                                                           |
-| ![Tüm projeler](docs/ekran-goruntuleri/tum-projeler.png)       | ![Düzen düzenleyici](docs/ekran-goruntuleri/duzen-duzenleyici.png)                |
-| **Gün ışığı teması**                                           | **Kuzey teması**                                                                  |
-| ![Gün ışığı teması](docs/ekran-goruntuleri/tema-gun-isigi.png) | ![Kuzey teması](docs/ekran-goruntuleri/tema-kuzey.png)                            |
-| **Ayarlar**                                                    | **Telefon genişliği**                                                             |
-| ![Ayarlar](docs/ekran-goruntuleri/ayarlar.png)                 | <img src="docs/ekran-goruntuleri/telefon.png" alt="Telefon görünümü" width="240"> |
+> All screenshots were taken with `npm run demo` using **fake** data.
 
-## Özellikler
+| **DevTechnic brand wall**                                    | **Lounge**                                                                  |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| ![Brand wall](docs/ekran-goruntuleri/marka-duvari.png)       | ![Lounge](docs/ekran-goruntuleri/dinlenme-alani.png)                        |
+| **Project office with agent panel**                          | **Agent details (camera follow)**                                           |
+| ![Agent panel](docs/ekran-goruntuleri/ajan-paneli.png)       | ![Detail panel](docs/ekran-goruntuleri/detay-paneli.png)                    |
+| **All projects**                                             | **Layout editor**                                                           |
+| ![All projects](docs/ekran-goruntuleri/tum-projeler.png)     | ![Layout editor](docs/ekran-goruntuleri/duzen-duzenleyici.png)              |
+| **Daylight theme**                                           | **Nordic theme**                                                            |
+| ![Daylight theme](docs/ekran-goruntuleri/tema-gun-isigi.png) | ![Nordic theme](docs/ekran-goruntuleri/tema-kuzey.png)                      |
+| **Settings**                                                 | **Phone width**                                                             |
+| ![Settings](docs/ekran-goruntuleri/ayarlar.png)              | <img src="docs/ekran-goruntuleri/telefon.png" alt="Phone view" width="240"> |
 
-### 🏢 DevTechnic ofisi (Sürüm 3)
+## Features
 
-- Arka duvarın ortasında **marka duvarı**: lacivert panel, ahşap çıtalar, ışıklı altın DevTechnic logosu ve yazısı.
-- Ofis bir kulenin katı: odanın altında lacivert **kat bandı** ve alt katların ışıklı cephesi, şehir aşağıda.
-- **Şehir:** kule bir blokta, etrafında yollar, yaya geçitleri, kaldırım ağaçları ve sokak lambaları (gece yerde
-  yumuşak ışık havuzları), park ve gölet, otopark, fıskiyeli meydan, yollarda dolaşan arabalar (gece farlar ve stop
-  lambaları yanar). Yakındaki binalar ofisten alçaktır; çatılarında klima, su deposu, güneş paneli, çatı bahçesi ya da
-  helikopter pisti vardır. Uzakta yüksek binalardan bir silüet.
-- **Toplantı odasında** akustik paneller ve konferans telefonu; **mutfakta** karo, mikrodalga, meyve kâsesi;
-  **dinlenme alanında** koltuklar, armut koltuk ve camgöbeği neon simge; **lider köşesinde** marka plaketi ve ödül
-  rafı; **girişte** "Hoş geldiniz" paspası, karşılama totemi ve portmanto.
-- **Kadraj** ekranın en-boy oranına göre seçilir: ofis geniş ekranı, panel açıkken kalan alanı ve dar ekranda
-  çalışma alanını doldurur.
-- Marka renkleri (altın `#eab308`, lacivert `#0f172a`, camgöbeği `#64ffda`) her temada aynı kalır; logo ve simge
-  yerel dosyalardan çizilir.
+- **Brand setting:** plain and neutral by default; pick the DevTechnic brand (wall, logo, plaque) in Settings.
+- **DevTechnic office (v3):** a brand wall with a backlit gold DevTechnic logo, the office as one floor of a tower
+  (navy floor slab, lit lower floors, city below), acoustic panels and a conference phone in the meeting room, tiles
+  and a fruit bowl in the kitchen, armchairs, a bean bag and a teal neon sign in the lounge, a brand plaque in the
+  lead's corner and a welcome mat and totem at the entrance. Framing adapts to the screen's aspect ratio so the
+  office fills wide screens, the area left when the panel is open and, on phones, the work area.
+- **City:** the tower sits on a city block with roads, crosswalks, street trees and lamps (soft light pools at night),
+  a park with a pond, a car park, a fountain plaza and moving traffic (headlights and tail lights at night). Nearby
+  buildings stay below the office floor and have rooftop AC units, water tanks, solar panels, roof gardens or a
+  helipad; taller buildings form a skyline further out.
+- **Project office:** role-based desk islands (Development, Design, Test, Review, Research, Architecture), a lead's
+  corner, glass meeting room, kitchen / coffee corner, whiteboard, bookshelf, lounge (sofa, armchairs and a game corner
+  with a TV and console), large windows and a city view. Agents defined in the project's `.claude/agents/*.md` have
+  their own desks and stay in the office even when idle; when work arrives the same character returns to its desk,
+  and after reporting back it stays (idle characters exist only in the scene and show as "idle" in the list).
+- **Roles and characters:** the main session is always the _Team lead_; sub-agent roles come from their type
+  (`tasarimci`/designer, `testci`/tester, `code-reviewer`, `Explore` → researcher, `Plan` → architect,
+  `general-purpose` → developer) or are inferred from behaviour. Articulated low-poly characters with role outfits.
+- **Live behaviour:** sub-agents walk in through the door, get a task from the lead, work at their desk, report back
+  and leave. Same-project messages make characters walk over; cross-project messages show a **flying letter**.
+  Thought bubbles, waving when waiting for you. **Living office:** idle characters watch videos or play games at
+  their desk (the monitor shows it), play the console together in the game corner, relax on the sofa or armchairs,
+  grab coffee, stretch and tinker at the lab bench; when work arrives they drop everything and head back. **A\***
+  pathfinding.
+- **Live tech props:** a glass **server room** whose rack LEDs blink with the share of busy agents, a **wall
+  dashboard** (busy / idle counts, actions over the last 10 minutes, clock), a **build light** plus an **LED strip** on
+  the floor band (green: all good, yellow: waiting for you, red: an agent hit an error), a **kanban board** (a working
+  agent's note sits in "In progress" and slides to "Done" when finished) and a **"Today in the office"** screen above
+  the door. Only counts, colours, roles and names are shown, never content, file names or commands.
+- **Tech-company details:** lab bench (3D printer, robot arm, soldering station, drone), espresso machine and snack
+  shelf, moss wall, ceiling cable trays; mechanical keyboards, rubber ducks, headphone stands, stickered laptops and
+  hoodies on chairs.
+- **Fake monitors:** animated canvas screens per activity (scrolling code, terminal, search, palettes, test ticks).
+  No real content.
+- **Interaction:** orbit / zoom / pan, click to follow a character, detail panel with the last 20 actions, role
+  filters, "hide offline", live activity feed ("Designer · Edit · theme.dart").
+- **Customisation:** drag-and-drop layout editor (0.5 m grid, keyboard support, saved per project), three themes
+  (Night, Daylight, Nordic), outfit colours and accessories per role, a mascot per project (cat, dog, robot).
+- **Comfort:** sound alerts generated in code (no downloads), low-power mode, reduced-motion support, rendering
+  slows down when unfocused and stops when the tab is hidden.
 
-### 🏢 Proje ofisi
+## Privacy and security
 
-- Rollere göre **masa adaları** (Geliştirme, Tasarım, Test, İnceleme, Araştırma, Mimari), **lider köşesi**, cam
-  duvarlı **toplantı odası**, **mutfak / kahve köşesi**, **beyaz tahta**, **kitaplık**, **dinlenme alanı** (kanepe,
-  koltuklar, TV ve oyun konsollu oyun köşesi), büyük
-  pencereler ve dışarıda **şehir manzarası**.
-- **Ekip listesi:** projede `.claude/agents/*.md` ile tanımlı ajanların masaları vardır; üyeler çalışmıyorken de
-  ofistedir ve boşta dolaşır. Üyeye iş gelince aynı karakter masasına döner, iş bitince lidere rapor verir ve ofiste
-  kalır. (Bu boştaki karakterler yalnızca sahnededir; listede "boşta" görünürler, tıklanmazlar.)
-- **Monitörler** duruma göre canlanır (tamamen sahte çizimler): kayan kod satırları, kayan sayfa, yeşil terminal
-  yazıları, büyüteç, renk paletleri, test tikleri.
+| Rule                     | How                                                                                                                |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| Read-only                | Nothing under `~/.claude` is ever written, deleted or moved                                                        |
+| Data stays local         | Server and UI listen on `127.0.0.1` only; WebSocket connections from other origins are rejected                    |
+| Secrets are never opened | `~/.claude/sessions/*.key` files are filtered by name and never opened                                             |
+| No identity data         | `session-owner`, `api-request*` lines and account IDs are skipped while parsing                                    |
+| No content               | Messages, thinking, code, command text and full paths are never read out or sent; only tool type and file **name** |
+| Screen sharing           | "Hide file names" and "Show session titles" switches in Settings                                                   |
+| Offline                  | Nothing is downloaded at runtime (fonts, textures and sounds included)                                             |
+| Team files               | Only the front-matter block of `.claude/agents/*.md` is read (max 4 KB)                                            |
 
-### 🧑‍💼 Roller ve karakterler
+Tests run against **fake** data in [`fixtures/`](fixtures/), never real logs.
 
-| Rol          | Nereden anlaşılır                                        | Görünüm                                 |
-| ------------ | -------------------------------------------------------- | --------------------------------------- |
-| Takım lideri | Ana oturum                                               | Ceket, köşe masa, büyük ekran           |
-| Geliştirici  | `gelistirici`, `general-purpose`, iş tanımı              | Kapüşon, kulaklık                       |
-| Tasarımcı    | `tasarimci` / `designer`                                 | Renkli kıyafet, bere, iki ekran, tablet |
-| Test uzmanı  | `testci` / `tester` / `qa`, çoğunlukla test çalıştırması | Yelek, kontrol listesi panosu           |
-| İnceleyici   | `inceleyici` / `code-reviewer`, hiç yazmadan okuması     | Gözlük                                  |
-| Araştırmacı  | `Explore`, `arastirmaci`                                 | —                                       |
-| Mimar        | `Plan`, `mimar`                                          | —                                       |
+## Getting started
 
-Karakterler eklemlidir (kalça, diz, omuz); oturma, ayakta durma ve yürüme arasında yumuşak geçiş yaparlar.
-
-### 🎬 Canlı davranışlar
-
-- Yeni yardımcı ajan **kapıdan girer**, rol masasına yürür; lider yanına gidip **iş verir**. İşi bitince lidere
-  **rapor verir** ve kapıdan çıkar.
-- Aynı projede bir oturum diğerine mesaj atınca onun masasına yürür; projeler arasında **uçan mektup** görünür.
-- Düşünürken düşünce balonu; **seni beklerken** ayağa kalkıp sana döner ve el sallar.
-- **Yaşayan ofis:** boştaki çalışanlar masasında video izler (ekranda video oynar), bilgisayarda oyun oynar, oyun
-  köşesinde armut koltuklara oturup konsolda oynar (TV'de iki kişilik yarış), kanepe ya da koltukta dinlenir, kahve
-  alır, gerinir, deney masasında kurcalar. Uzun süre boşta kalan çoğunlukla dinlenme alanına geçer; iş gelince
-  elindekini bırakıp masasına döner.
-- **Canlı veriye bağlı teknoloji eşyaları:** cam duvarlı **sunucu odası** (dolap ışıkları çalışan oranına göre yanıp
-  söner), **duvar panosu** (çalışan / boşta sayıları, son 10 dakikanın işlem grafiği, saat), **derleme lambası** ve
-  kat bandında **LED şerit** (yeşil: yolunda, sarı: seni bekliyor, kırmızı: bir ajan hata aldı), **kanban panosu**
-  (çalışan ajanın notu "Yapılıyor"da, işi bitince "Bitti"ye kayar), kapının üstünde **"Bugün ofiste"** ekranı.
-  Yalnızca sayı, renk, rol ve ad gösterilir; iş içeriği, dosya adı ya da komut gösterilmez.
-- **Teknoloji şirketi ayrıntıları:** deney masası (3B yazıcı, robot kol, lehim istasyonu, drone), espresso makinesi ve
-  atıştırmalık rafı, yosun duvarı, tavanda kablo kanalları; masalarda mekanik klavye, lastik ördek, kulaklık standı,
-  çıkartmalı dizüstü, sandalyede kapüşonlu.
-- Karakterler mobilyalara çarpmadan yürür (ızgara üzerinde **A\*** yol bulma).
-
-### 🎛️ Etkileşim ve özelleştirme
-
-- Fareyle döndürme / yakınlaştırma / kaydırma; karaktere tıklayınca **kamera takip eder**, **detay paneli** açılır.
-- **Rol filtreleri**, **kapalıları gizle**, köşede **canlı işlem akışı** ("Tasarımcı · Edit · theme.dart").
-- **Düzen düzenleyicisi:** masa adalarını sürükle-bırak (0,5 m ızgara, geçerli/geçersiz renkli önizleme, klavye
-  desteği, proje başına kayıt).
-- **Üç tema:** Gece, Gün ışığı, Kuzey.
-- Rol başına kıyafet rengi ve aksesuar; proje başına **maskot** (kedi, köpek, robot).
-- **Sesli uyarılar** (kodla üretilir, dosya indirilmez), **düşük güç modu**, **hareketi azalt** desteği.
-
-## Gizlilik ve güvenlik
-
-Bu proje baştan gizlilik kurallarıyla tasarlandı:
-
-| Kural                  | Nasıl sağlanıyor                                                                                                  |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Yalnızca okuma         | `~/.claude` altında hiçbir dosyaya yazılmaz, silinmez, taşınmaz                                                   |
-| Veri dışarı çıkmaz     | Sunucu ve arayüz yalnızca `127.0.0.1`'de dinler; başka siteden gelen WebSocket bağlantıları reddedilir            |
-| Gizli dosyalar açılmaz | `~/.claude/sessions/*.key` dosyaları adından elenir, hiç açılmaz                                                  |
-| Kimlik bilgisi yok     | `session-owner`, `api-request*` satırları ve hesap kimlikleri okunurken atlanır                                   |
-| İçerik yok             | Mesaj, düşünce, kod, komut metni ve tam yol hiçbir zaman okunmaz/gönderilmez; yalnızca araç türü ve dosya **adı** |
-| Ekran paylaşımı        | Ayarlarda **Dosya adlarını gizle** ve **Oturum başlıklarını göster** anahtarları                                  |
-| Çevrimdışı             | Uygulama çalışırken internetten hiçbir şey indirmez (yazı tipi, doku, ses dahil)                                  |
-| Ekip dosyaları         | `.claude/agents/*.md` dosyalarından yalnızca baştaki ön bilgi bloğu okunur (en fazla 4 KB)                        |
-
-Testler gerçek kayıtlarla değil, [`fixtures/`](fixtures/) içindeki **uydurma** verilerle çalışır.
-
-## Kurulum ve çalıştırma
-
-**Gereken:** [Node.js](https://nodejs.org/) 22 veya üstü ve bilgisayarında kullanılan Claude Code.
+**Requirements:** [Node.js](https://nodejs.org/) 22+ and Claude Code in use on the same machine.
 
 ```bash
 git clone https://github.com/zinkxx/agent-office.git
 cd agent-office
-npm install      # yalnızca ilk seferde
-npm start        # sunucu + arayüz birlikte başlar, tarayıcı kendiliğinden açılır
+npm install
+npm start        # starts server + UI and opens the browser
 ```
 
-Tarayıcıda **http://127.0.0.1:5174** açılır. İlk açılışta sayfanın gelmesi birkaç saniye sürebilir.
-
-### Örnek verilerle denemek
+The UI opens at **http://127.0.0.1:5174**.
 
 ```bash
-npm run demo                                          # canlı değişen, kalabalık uydurma ofis (3 proje)
-AJAN_OFISI_CLAUDE_HOME=fixtures/claude-home npm start # sabit örnek kayıtlar
+npm run demo                                          # lively fake office (3 projects), reads no files
+AJAN_OFISI_CLAUDE_HOME=fixtures/claude-home npm start # static sample logs
 ```
 
-Demo modu hiçbir dosya okumaz; yardımcı ajan doğuşu, mesajlaşma, rapor ve boşta davranışlarını görmek içindir.
+## Scripts and environment
 
-## Kullanım
+| Command               | Description                                                            |
+| --------------------- | ---------------------------------------------------------------------- |
+| `npm start`           | Starts the server (5175) and UI (5174)                                 |
+| `npm run demo`        | Crowded demo office with fake data                                     |
+| `npm test`            | Runs the tests (Vitest)                                                |
+| `npm run typecheck`   | Type-checks server and UI                                              |
+| `npm run check`       | Type-check + tests                                                     |
+| `npm run format`      | Formats the code with Prettier                                         |
+| `npm run screenshots` | Regenerates README screenshots (headless Chrome, needs a running demo) |
 
-| Ne                 | Nasıl                                                                            |
-| ------------------ | -------------------------------------------------------------------------------- |
-| Proje seçmek       | Üstteki **Proje** seçicisi (açılışta en son etkin proje gelir, seçim hatırlanır) |
-| Gezinmek           | Sol tuşla sürükle = döndür · tekerlek = yakınlaştır · sağ tuşla sürükle = kaydır |
-| Bir ajanı izlemek  | Karaktere ya da sağ paneldeki ajana tıkla                                        |
-| Tüm ofise dönmek   | **Tüm ofis** düğmesi ya da boşluğa çift tıklama                                  |
-| Masaları taşımak   | **Düzenle** → adayı sürükle (ya da ok tuşları) → **Bitti**                       |
-| Tema, ses, maskot… | **Ayarlar**                                                                      |
+| Variable                 | Default     | Description                                             |
+| ------------------------ | ----------- | ------------------------------------------------------- |
+| `AJAN_OFISI_PORT`        | `5175`      | Server port                                             |
+| `AJAN_OFISI_WEB_PORT`    | `5174`      | UI port                                                 |
+| `AJAN_OFISI_NO_OPEN`     | —           | `1` = don't open the browser                            |
+| `AJAN_OFISI_DEMO`        | —           | `1` or `dolu` (crowded): fake demo office               |
+| `AJAN_OFISI_CLAUDE_HOME` | `~/.claude` | Alternative Claude folder (e.g. `fixtures/claude-home`) |
 
-### Projenin kendi ekibi
-
-Bu depoda Claude Code için bir ekip tanımlıdır ([`.claude/agents/`](.claude/agents/)): **gelistirici**, **testci**,
-**inceleyici**, **tasarimci** ve **arastirmaci**. Ana oturum (Takım lideri) işleri bunlara dağıttığında ofiste kendi
-masalarında çalışırken görünürler. Genel yardımcı ajan kullanılıyorsa iş tanımını rol adıyla başlatmak
-("Geliştirici: …") rolü ve masayı doğru gösterir.
-
-## Komutlar ve ortam değişkenleri
-
-| Komut                 | Ne yapar                                                                                             |
-| --------------------- | ---------------------------------------------------------------------------------------------------- |
-| `npm start`           | Sunucuyu (5175) ve arayüzü (5174) başlatır, tarayıcıyı açar                                          |
-| `npm run demo`        | Uydurma verilerle kalabalık demo ofisi                                                               |
-| `npm test`            | Testleri çalıştırır (Vitest)                                                                         |
-| `npm run typecheck`   | Tip kontrolü (sunucu + arayüz)                                                                       |
-| `npm run check`       | Tip kontrolü + testler                                                                               |
-| `npm run format`      | Kodu Prettier ile biçimlendirir                                                                      |
-| `npm run screenshots` | README ekran görüntülerini yeniden alır (görünmez Chrome; demo açık olmalı, ayrıntı betiğin başında) |
-
-| Ortam değişkeni          | Varsayılan  | Açıklama                                                    |
-| ------------------------ | ----------- | ----------------------------------------------------------- |
-| `AJAN_OFISI_PORT`        | `5175`      | Sunucu portu                                                |
-| `AJAN_OFISI_WEB_PORT`    | `5174`      | Arayüz portu                                                |
-| `AJAN_OFISI_NO_OPEN`     | —           | `1` ise tarayıcı otomatik açılmaz                           |
-| `AJAN_OFISI_DEMO`        | —           | `1` ya da `dolu`: uydurma demo ofisi (hiçbir dosya okunmaz) |
-| `AJAN_OFISI_CLAUDE_HOME` | `~/.claude` | Başka bir Claude klasörü (ör. `fixtures/claude-home`)       |
-
-Açık olan asıl ofisi bozmadan ikinci bir örnek çalıştırmak için:
-
-```bash
-AJAN_OFISI_DEMO=dolu AJAN_OFISI_PORT=5185 AJAN_OFISI_WEB_PORT=5184 AJAN_OFISI_NO_OPEN=1 npm start
-```
-
-## Mimari
+## Architecture
 
 ```mermaid
 flowchart LR
-  subgraph Disk["~/.claude (yalnızca okunur)"]
-    S["sessions/&lt;pid&gt;.json<br/>canlı oturumlar"]
-    P["projects/**/*.jsonl<br/>oturum ve alt ajan kayıtları"]
+  subgraph Disk["~/.claude (read-only)"]
+    S["sessions/&lt;pid&gt;.json<br/>live sessions"]
+    P["projects/**/*.jsonl<br/>session and sub-agent logs"]
   end
-  subgraph Server["Yerel sunucu · Node.js · 127.0.0.1:5175"]
-    C["Toplayıcı<br/>chokidar + sondan takip"]
-    PR["Ayrıştırıcı<br/>gizlilik filtresi"]
-    ST["Durum modeli<br/>roller, ekip, mektuplar"]
+  subgraph Server["Local server · Node.js · 127.0.0.1:5175"]
+    C["Collector<br/>chokidar + tail"]
+    PR["Parser<br/>privacy filter"]
+    ST["State model<br/>roles, teams, letters"]
   end
-  subgraph Web["Tarayıcı · React + Three.js · 127.0.0.1:5174"]
-    Z["zustand durumu"]
-    SIM["Simülasyon<br/>A*, kat planı, davranış"]
-    R3F["3B sahne<br/>react-three-fiber"]
+  subgraph Web["Browser · React + Three.js · 127.0.0.1:5174"]
+    Z["zustand store"]
+    SIM["Simulation<br/>A*, floor plan, behaviour"]
+    R3F["3D scene<br/>react-three-fiber"]
   end
   S --> C
   P --> C
   C --> PR --> ST
-  ST -- "WebSocket<br/>anlık görüntü" --> Z --> SIM --> R3F
+  ST -- "WebSocket<br/>snapshots" --> Z --> SIM --> R3F
 ```
 
-- **Sondan takip:** kayıt dosyaları 40 MB'ı geçebilir; ilk açılışta yalnızca son ~256 KB okunur, sonra yalnızca
-  eklenen satırlar 1 MB'lık parçalarla işlenir.
-- **Savunmacı ayrıştırma:** bozuk, yarım ya da tanınmayan satırlar atlanır; sunucu asla çökmez.
-- **Saf simülasyon:** yol bulma, kat planı ve davranışlar React'tan bağımsız, testli modüllerdir; React yalnızca
-  çizer.
-- **Performans:** tekrar eden mobilyalar `InstancedMesh` ile çizilir; pencere odakta değilken kare hızı düşer, sekme
-  gizliyken çizim durur.
+- **Tailing:** log files can exceed 40 MB; only the last ~256 KB is read on start-up, then only appended lines are
+  processed in 1 MB chunks.
+- **Defensive parsing:** broken, partial or unknown lines are skipped; the server never crashes on bad input.
+- **Pure simulation:** pathfinding, floor plan and behaviour are React-free, unit-tested modules; React only renders.
+- **Performance:** repeated furniture is drawn with `InstancedMesh`; ~119 FPS with 13 characters on an Apple M1.
 
-Teknolojiler: Node.js 22, TypeScript (katı mod), `ws`, `chokidar`, Vite, React 19, Three.js,
-`@react-three/fiber`, `@react-three/drei`, `@react-three/postprocessing`, zustand, Vitest, Prettier.
+**Stack:** Node.js 22, TypeScript (strict), `ws`, `chokidar`, Vite, React 19, Three.js, `@react-three/fiber`,
+`@react-three/drei`, `@react-three/postprocessing`, zustand, Vitest, Prettier.
 
-## Proje yapısı
+## Project layout
 
 ```
-.
-├── server/                 Yerel sunucu: kayıtları izler, durumu hesaplar, tarayıcıya canlı gönderir
-│   └── src/
-│       ├── main.ts         HTTP + WebSocket sunucusu (127.0.0.1)
-│       ├── collector.ts    Dosya izleme ve takipçilerin yönetimi
-│       ├── tail.ts         Büyük dosyaları sondan, parça parça okuma
-│       ├── parser.ts       Savunmacı ayrıştırıcı ve gizlilik filtresi
-│       ├── sessions.ts     Canlı oturum listesi (.key dosyaları hariç)
-│       ├── store.ts        Durum modeli (ajanlar, durumlar, mektuplar)
-│       ├── roles.ts        Rol çıkarımı
-│       ├── roster.ts       Ekip listesi (.claude/agents/*.md, yalnızca ön bilgi)
-│       └── demo.ts         Uydurma demo ofisi
-├── web/                    Tarayıcı arayüzü (React + Three.js)
-│   └── src/
-│       ├── App.tsx         Üst çubuk, detay paneli, akış
-│       ├── store.ts        Sunucu bağlantısı ve arayüz durumu (zustand)
-│       ├── AgentList.tsx   Ajanlar paneli ve filtreler
-│       ├── SettingsPanel.tsx  Ayarlar penceresi
-│       ├── sound.ts        Kodla üretilen sesli uyarılar
-│       └── office/         3B sahne
-│           ├── sim/        Saf mantık: A* yol bulma, kat planı, davranış, maskot
-│           ├── project/    Proje ofisi: mobilyalar, oda, ekranlar, karakterler, düzenleyici
-│           ├── Character.tsx  Eklemli, rol görünümlü karakter
-│           ├── themes.ts   Temalar (arayüz + sahne renkleri)
-│           └── AllProjectsScene.tsx  "Tüm projeler" görünümü ve uçan mektup
-├── shared/types.ts         Sunucu ve arayüzün ortak veri tipleri
-├── fixtures/               Testler için uydurma Claude klasörü ve ekip listesi
-├── scripts/                Yardımcı betikler (README ekran görüntüleri)
-├── web/public/brand/       DevTechnic logosu ve simgesi (yerel dosyalar)
-├── docs/                   Belgeler ve ekran görüntüleri
-├── PLAN.md                 Yol haritası ve ilerleme günlüğü
-└── CLAUDE.md               Claude Code için çalışma kuralları
+server/    Local server: watches logs, computes state, streams to the browser
+web/       Browser UI (React + Three.js); 3D scene in web/src/office
+shared/    Types shared by server and UI
+fixtures/  Fake Claude folder and team list for tests
+scripts/   Helper scripts (README screenshots)
+docs/      Documentation and screenshots
+PLAN.md    Roadmap and progress log (Turkish)
+CLAUDE.md  Working rules for Claude Code (Turkish)
 ```
 
-## Geliştirme ve testler
+## Development
 
 ```bash
-npm run check   # tip kontrolü + testler
-npm run format  # Prettier
+npm run check   # type-check + tests
 ```
 
-- TypeScript katı modda (`strict: true`); testler [Vitest](https://vitest.dev/) ile.
-- Testler ayrıştırıcıyı, sondan takibi, gizlilik filtresini, rol çıkarımını, bellek budamasını, yol bulmayı, kat
-  planını, simülasyonu, temaları ve ayarları kapsar.
-- Her `push` ve `pull request`'te GitHub Actions `npm run check` çalıştırır
-  ([`.github/workflows/check.yml`](.github/workflows/check.yml)).
+GitHub Actions runs `npm run check` and a production UI build on every push to `main` and on pull requests.
 
-## Yol haritası
+## Roadmap
 
-Ayrıntılı plan ve ilerleme günlüğü: [PLAN.md](PLAN.md).
+- [x] Reader, privacy filter, state model, live streaming
+- [x] 3D project office, role characters, pathfinding, live behaviour
+- [x] Interaction, settings, themes, layout editor, mascots
+- [x] Performance, memory pruning, low-power mode, accessibility
+- [x] **v3 · DevTechnic office:** brand wall and sign, visual upgrade of every area, full-viewport office
+- [ ] Optional desktop app (Tauri/Electron) or VS Code panel
 
-- [x] Okuyucu, gizlilik filtresi, durum modeli ve canlı yayın
-- [x] 3B proje ofisi, rol karakterleri, yol bulma ve canlı davranışlar
-- [x] Etkileşim, ayarlar, temalar, düzen düzenleyicisi, maskotlar
-- [x] Performans, bellek budaması, düşük güç modu, erişilebilirlik
-- [x] **Sürüm 3 · DevTechnic ofisi:** marka duvarı ve tabela, alanların görsel olarak geliştirilmesi, ofisin tüm
-      tarayıcı alanını doldurması
-- [ ] İstenirse masaüstü uygulaması (Tauri/Electron) ya da VS Code paneli olarak paketleme
+## License
+
+[MIT](LICENSE) © Agent Office contributors.
 
 ---
 
 <div align="center">
-<sub>Claude Code kayıt biçimi Anthropic tarafından belgelenmiş resmi bir arayüz değildir; Claude Code sürümleriyle
-değişebilir. Ayrıntılar: <a href="docs/veri-bicimi.md">docs/veri-bicimi.md</a></sub>
+<sub>The Claude Code log format is not an official, documented Anthropic interface and may change between Claude
+Code versions.</sub>
 </div>

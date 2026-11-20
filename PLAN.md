@@ -634,3 +634,8 @@ güneş paneli, çatı bahçesi, helikopter pisti), park, otopark; uzak halkada 
   depodan çıkarıldı, yerelde duruyor (`.gitignore`). Git e-postası GitHub'ın gizli adresine çevrildi (yalnızca bu
   depo); kişisel e-posta içeren eski geçmiş tek bir yeni kayda indirilip GitHub'a zorla gönderildi. Lider köşesi
   yenilemesi de bu kayıtta.
+
+- 20.11.2026: Ayarlara "Marka" eklendi (`settings.brand`: 'sade' varsayılan | 'devtechnic', localStorage). Marka dokuları/yazıları/başlık markaya bağlı (`office/brand.ts`, textures.ts, Room.tsx, App.tsx); sade markada simge kanvasla çizilir, `/brand/` dosyaları yalnızca DevTechnic'te yüklenir. Mobilya anahtarına marka eklendi; sekme başlığı "Ajan Ofisi", simge `web/public/favicon.svg`.
+
+- 20.11.2026: Statik demo kipi (VITE_STATIC_DEMO=1): arayüz WebSocket yerine tarayıcıda OfficeStore + startDemo (kalabalık) çalıştırır; anlık görüntüler `applySnapshot` ile aynı yoldan geçer (web/src/staticDemo.ts). Başlıkta "Canlı demo · uydurma veriler" rozeti. web tsconfig `types`a "node" eklendi (yalnızca tip kontrolü için).
+- `.github/workflows/pages.yml` + `npm run build:demo` (taban /agent-office/): main gönderiminde GitHub Pages yayını. Yerelde doğrulandı. Kullanıcı: Settings → Pages → Source: GitHub Actions.

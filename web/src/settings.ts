@@ -1,6 +1,7 @@
 import { AGENT_ROLES, type Agent, type AgentRole } from '../../shared/types.ts';
 import { isActive } from './labels.ts';
 import { MASCOT_KINDS, type MascotKind } from './office/sim/mascot.ts';
+import { DEFAULT_BRAND, isBrandId, type BrandId } from './office/brand.ts';
 import { DEFAULT_THEME, isThemeId, type ThemeId } from './office/themes.ts';
 
 export type { ThemeId };
@@ -33,6 +34,8 @@ export const MASCOT_LABEL: Record<MascotKind, string> = { cat: 'Kedi', dog: 'Kö
 /** Tarayıcıda saklanan kullanıcı ayarları. */
 export interface Settings {
   theme: ThemeId;
+  /** Marka: sade (varsayılan) ya da DevTechnic yüzeyleri. */
+  brand: BrandId;
   /** Dosya adları gösterilmez (ekran paylaşırken). */
   hideFiles: boolean;
   /** Oturumun otomatik başlığı (içerik özeti) gösterilsin mi. */
@@ -54,6 +57,7 @@ export interface Settings {
 
 export const DEFAULT_SETTINGS: Settings = {
   theme: DEFAULT_THEME,
+  brand: DEFAULT_BRAND,
   hideFiles: false,
   showTitles: true,
   hideOffline: false,
@@ -100,6 +104,7 @@ export function parseSettings(raw: string | null, legacyHideFiles: string | null
     looks: parseLooks(data.looks),
     mascots: parseMascots(data.mascots),
     theme,
+    brand: isBrandId(data.brand) ? data.brand : DEFAULT_BRAND,
     hideFiles: bool('hideFiles'),
     showTitles: bool('showTitles'),
     hideOffline: bool('hideOffline'),
