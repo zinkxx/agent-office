@@ -220,7 +220,7 @@ GitHub Actions runs `npm run check` and a production UI build on every push to `
 - [x] Interaction, settings, themes, layout editor, mascots
 - [x] Performance, memory pruning, low-power mode, accessibility
 - [x] **v3 · DevTechnic office:** brand wall and sign, visual upgrade of every area, full-viewport office
-- [ ] Optional desktop app (Tauri/Electron) or VS Code panel
+- [x] Live browser demo on GitHub Pages (a desktop app was considered and dropped: the browser is enough)
 
 ## License
 

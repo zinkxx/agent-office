@@ -24,7 +24,14 @@ function ConnectionBadge() {
   const retryInMs = useOffice((s) => s.retryInMs);
   if (connection === 'open') {
     return (
-      <span className="conn open" title="Yerel sunucuya bağlı (127.0.0.1)">
+      <span
+        className="conn open"
+        title={
+          STATIC_DEMO
+            ? 'Tarayıcıda çalışan demo (sunucu yok, uydurma veriler)'
+            : 'Yerel sunucuya bağlı (127.0.0.1)'
+        }
+      >
         <span className="conn-dot" /> <span className="conn-text">canlı</span>
       </span>
     );

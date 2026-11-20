@@ -323,7 +323,7 @@ Ayrıntılı plan ve ilerleme günlüğü: [PLAN.md](PLAN.md).
 - [x] Performans, bellek budaması, düşük güç modu, erişilebilirlik
 - [x] **Sürüm 3 · DevTechnic ofisi:** marka duvarı ve tabela, alanların görsel olarak geliştirilmesi, ofisin tüm
       tarayıcı alanını doldurması
-- [ ] İstenirse masaüstü uygulaması (Tauri/Electron) ya da VS Code paneli olarak paketleme
+- [x] GitHub Pages'te tarayıcıda canlı demo (masaüstü uygulaması düşünüldü, gerek görülmedi: tarayıcı yeterli)
 
 ## Lisans
 
