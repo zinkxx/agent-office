@@ -1,0 +1,7 @@
+{
+  "agentType": "workflow",
+  "isBuiltIn": true,
+  "description": "Akış adımı",
+  "spawnDepth": 2,
+  "workflowPhase": "inceleme"
+}

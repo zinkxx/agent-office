@@ -1,0 +1,13 @@
+{
+  "pid": 1111,
+  "sessionId": "11111111-1111-4111-8111-111111111111",
+  "cwd": "/Users/demo/Desktop/Atlas",
+  "name": "atlas-demo",
+  "kind": "interactive",
+  "entrypoint": "cli",
+  "status": "busy",
+  "startedAt": 1795000000000,
+  "updatedAt": 1795000060000,
+  "statusUpdatedAt": 1795000060000,
+  "version": "9.9.9"
+}

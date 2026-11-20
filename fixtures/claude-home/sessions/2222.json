@@ -1,0 +1,13 @@
+{
+  "pid": 2222,
+  "sessionId": "22222222-2222-4222-8222-222222222222",
+  "cwd": "/Users/demo/Desktop/Nova",
+  "name": "nova-demo",
+  "kind": "interactive",
+  "entrypoint": "claude-vscode",
+  "status": "idle",
+  "startedAt": 1795000000000,
+  "updatedAt": 1795000030000,
+  "statusUpdatedAt": 1795000030000,
+  "version": "9.9.9"
+}

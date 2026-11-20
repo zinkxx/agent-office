@@ -1,0 +1,34 @@
+{
+  "name": "ajan-ofisi",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Claude Code oturumlarını 3B bir ofiste canlı gösteren yerel uygulama",
+  "type": "module",
+  "workspaces": [
+    "server",
+    "web"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "concurrently -k -n sunucu,arayuz -c magenta,cyan \"npm:dev -w server\" \"npm:dev -w web\"",
+    "demo": "AJAN_OFISI_DEMO=dolu npm start",
+    "test": "vitest run",
+    "typecheck": "tsc -p server --noEmit && tsc -p web --noEmit",
+    "format": "prettier --write .",
+    "check": "npm run typecheck && npm test",
+    "screenshots": "node scripts/ekran-goruntuleri.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "concurrently": "^9.2.5",
+    "prettier": "^3.10.1",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^5.1.1"
+  },
+  "overrides": {
+    "@types/three": "0.170.0"
+  }
+}

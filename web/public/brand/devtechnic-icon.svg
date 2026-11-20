@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <defs>
+    <style>
+      .s { fill: none; stroke: #64ffda; stroke-width: 10; stroke-linecap: round; }
+      .d { fill: #64ffda; }
+    </style>
+  </defs>
+  <rect x="24" y="24" width="208" height="208" rx="36" ry="36" class="s"/>
+  <rect x="52" y="56" width="152" height="36" rx="10" ry="10" class="s"/>
+  <rect x="52" y="110" width="152" height="36" rx="10" ry="10" class="s"/>
+  <rect x="52" y="164" width="152" height="36" rx="10" ry="10" class="s"/>
+  <circle cx="64" cy="74" r="6" class="d"/>
+  <circle cx="64" cy="128" r="6" class="d"/>
+  <circle cx="64" cy="182" r="6" class="d"/>
+</svg>
