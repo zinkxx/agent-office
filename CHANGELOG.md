@@ -2,7 +2,7 @@
 
 All notable changes to Agent Office are listed here. Versions follow [Semantic Versioning](https://semver.org).
 
-## [Unreleased]
+## [1.1.0] · 2026-11-21
 
 ### Added
 
@@ -49,5 +49,6 @@ First public release: Claude Code sessions and sub-agents as characters in a liv
 three themes, layout editor, mascots, low-power mode, and a [live demo](https://zinkxx.github.io/agent-office/) on
 GitHub Pages. Runs only on `127.0.0.1`; nothing leaves the machine.
 
+[1.1.0]: https://github.com/zinkxx/agent-office/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/zinkxx/agent-office/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/zinkxx/agent-office/releases/tag/v1.0.0

@@ -669,3 +669,6 @@ güneş paneli, çatı bahçesi, helikopter pisti), park, otopark; uzak halkada 
   (gerçek yakalamayla doğrulandı). **#2** (PR #18, geliştirici ajan) TR/EN arayüz: `web/src/i18n.ts` (dil başına 194
   metin, anahtar eşitliği tip düzeyinde), `settings.language`, varsayılan tarayıcı dili; 3B yazılar dahil; demo
   görev başlıkları kapsam dışı. Toplam 32 test dosyası, 267 test; üç sistemde CI ve CodeQL geçti.
+- **21.11.2026:** v1.1.0 yayınlandı (kullanıcı istedi): İngilizce arayüz, görüntü kaydetme, Windows/Linux desteği ve
+  önceki düzeltmeler. Paket sürümleri 1.1.0; CHANGELOG başlığı ve karşılaştırma bağlantısı eklendi. Sürüm notu
+  tarayıcıda GitHub'da yazıldı.
