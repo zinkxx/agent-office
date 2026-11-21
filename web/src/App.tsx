@@ -16,6 +16,7 @@ import { visibleAgents } from './settings.ts';
 import { EditLayoutButton, LayoutBar } from './LayoutBar.tsx';
 import { SettingsButton, SettingsPanel } from './SettingsPanel.tsx';
 import { brandTexts } from './office/brand.ts';
+import { captureView, dataUrlToBytes, snapshotFileName } from './office/capture.ts';
 import { STATIC_DEMO, useBrand, useCurrentView, useLang, useOffice, useT, useTheme } from './store.ts';
 import { ALL_PROJECTS, projectsOf, viewKey } from './view.ts';
 
@@ -206,6 +207,53 @@ function Feed() {
   );
 }
 
+/**
+ * Sahnenin o anki görünümünü PNG olarak indirir. Dosya tarayıcıda oluşur, hiçbir yere yüklenmez; yalnızca
+ * 3B tuval yakalanır, HTML etiketleri (adlar, dosya adları) görüntüye girmez.
+ */
+function saveImage() {
+  const data = dataUrlToBytes(captureView() ?? '');
+  if (!data) return;
+  const url = URL.createObjectURL(new Blob([data.bytes], { type: data.type }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = snapshotFileName(new Date());
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function SaveImageButton({ disabled }: { disabled: boolean }) {
+  const t = useT();
+  return (
+    <button
+      type="button"
+      className="ghost with-icon"
+      onClick={saveImage}
+      disabled={disabled}
+      title={t('top.saveImageTitle')}
+      aria-label={t('top.saveImage')}
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M4 8a1 1 0 0 1 1-1h3l1.5-2h5L16 7h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" />
+        <circle cx="12" cy="13" r="3.5" />
+      </svg>
+      <span className="label-text">{t('top.saveImage')}</span>
+    </button>
+  );
+}
+
 export function App() {
   const panelOpen = useOffice((s) => s.panelOpen);
   const togglePanel = useOffice((s) => s.togglePanel);
@@ -286,6 +334,7 @@ export function App() {
           </svg>
           <span className="label-text">{t('top.wholeOffice')}</span>
         </button>
+        <SaveImageButton disabled={!hasData} />
         <EditLayoutButton />
         <SettingsButton />
         <button

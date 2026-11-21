@@ -1,0 +1,2 @@
+# Satır sonları her işletim sisteminde LF kalsın (Windows testleri ve fixture kayıtları için).
+* text=auto eol=lf

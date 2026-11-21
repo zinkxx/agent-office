@@ -72,6 +72,8 @@ const tr = {
   'top.demoBadgeTitle': 'GitHub deposunu aç',
   'top.wholeOffice': 'Tüm ofis',
   'top.wholeOfficeTitle': 'Kamerayı tüm ofise döndür',
+  'top.saveImage': 'Görüntü kaydet',
+  'top.saveImageTitle': 'Ofisin o anki görünümünü PNG olarak indir',
   'top.hidePanel': 'Paneli gizle',
   'top.agents': 'Ajanlar',
 
@@ -300,6 +302,8 @@ const en: Record<MessageKey, string> = {
   'top.demoBadgeTitle': 'Open the GitHub repository',
   'top.wholeOffice': 'Whole office',
   'top.wholeOfficeTitle': 'Return the camera to the whole office',
+  'top.saveImage': 'Save image',
+  'top.saveImageTitle': 'Download the current view of the office as a PNG',
   'top.hidePanel': 'Hide panel',
   'top.agents': 'Agents',
 

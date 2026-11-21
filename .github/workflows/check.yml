@@ -7,8 +7,12 @@ on:
 
 jobs:
   check:
-    name: Tip kontrolü ve testler
-    runs-on: ubuntu-latest
+    name: Tip kontrolü ve testler (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -19,3 +23,5 @@ jobs:
       - run: npm run check
       - name: Arayüz derlemesi
         run: npm run build -w web
+      - name: Canlı demo derlemesi (ortam değişkeni betiği her sistemde çalışıyor mu)
+        run: npm run build:demo

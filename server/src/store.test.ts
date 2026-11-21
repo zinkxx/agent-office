@@ -90,6 +90,15 @@ describe('OfficeStore', () => {
     expect(sub).toBeUndefined();
   });
 
+  it('Windows yolundan yalnızca proje adı çıkar, tam yol görünmez', () => {
+    const { store } = setup();
+    store.setLiveSessions([live({ cwd: 'C:\\Users\\kullanici\\Atlas' })]);
+    const snap = store.snapshot();
+    const agent = snap.agents.find((a) => a.id === 's1')!;
+    expect(agent.project).toBe('Atlas');
+    expect(JSON.stringify(snap)).not.toContain('kullanici');
+  });
+
   it('mesaj gönderilince alıcıya mektup oluşur', () => {
     const { store, at } = setup();
     store.setLiveSessions([live(), live({ pid: 2, sessionId: 's2', name: 'nova-2', cwd: '/x/Nova' })]);
