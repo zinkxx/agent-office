@@ -222,10 +222,16 @@ export function App() {
         {!hasData && (
           <div className="stage-overlay">
             <div className="loader" />
-            <p>Yerel sunucu bekleniyor…</p>
-            <p className="hint">
-              Sunucu kapalıysa proje klasöründe <code>npm start</code> çalıştır.
-            </p>
+            {STATIC_DEMO ? (
+              <p>Demo ofis hazırlanıyor…</p>
+            ) : (
+              <>
+                <p>Yerel sunucu bekleniyor…</p>
+                <p className="hint">
+                  Sunucu kapalıysa proje klasöründe <code>npm start</code> çalıştır.
+                </p>
+              </>
+            )}
           </div>
         )}
       </div>

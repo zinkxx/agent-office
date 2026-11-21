@@ -4,6 +4,11 @@ All notable changes to Agent Office are listed here. Versions follow [Semantic V
 
 ## [Unreleased]
 
+### Fixed
+
+- Live demo: the loading screen said "waiting for the local server, run `npm start`"; it now says the demo office is
+  being prepared.
+
 ### Changed
 
 - three.js 0.170 → 0.187, with a single copy in the bundle (the update alone pulled in two) and matching type
