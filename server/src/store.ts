@@ -10,6 +10,7 @@ import type {
 } from '../../shared/types.ts';
 import type { ParsedEvent, ParsedLine } from './parser.ts';
 import { emptyStats, inferRole, normalizeName, type ToolStats } from './roles.ts';
+import { lastPathSegment } from './paths.ts';
 import type { LiveSession } from './sessions.ts';
 
 /** Kapanmış bir oturum ofiste bu kadar süre (sönük) kalır, sonra gizlenir. */
@@ -406,8 +407,7 @@ export class OfficeStore {
 const UNKNOWN_PROJECT = 'Proje';
 
 function projectOf(cwd: string): string {
-  const parts = cwd.split('/').filter(Boolean);
-  return parts[parts.length - 1] ?? UNKNOWN_PROJECT;
+  return lastPathSegment(cwd) ?? UNKNOWN_PROJECT;
 }
 
 /** Rol tahmini için araç sayaçları (içerik yok). */
