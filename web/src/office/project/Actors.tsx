@@ -2,8 +2,8 @@ import { useFrame, type ThreeEvent } from '@react-three/fiber';
 import { useMemo, useRef, useState } from 'react';
 import { Vector3, type Group } from 'three';
 import type { Agent, AgentRole } from '../../../../shared/types.ts';
-import { ROLE_COLOR, ROLE_LABEL, STATUS_COLOR, STATUS_LABEL } from '../../labels.ts';
-import { useOffice, useRoleLook } from '../../store.ts';
+import { ROLE_COLOR, STATUS_COLOR, roleLabel, statusLabel } from '../../labels.ts';
+import { useLang, useOffice, useRoleLook, useT } from '../../store.ts';
 import { Character, lookFor, type CharacterDrive } from '../Character.tsx';
 import { Bubble, type IconName } from '../icons.tsx';
 import { Label } from '../Label.tsx';
@@ -157,16 +157,18 @@ function NameTag({
   compact: boolean;
   selectable: boolean;
 }) {
+  const lang = useLang();
+  const role = roleLabel(agent.role, lang);
   const className = `tag role-tag${selected ? ' selected' : ''}${compact ? ' compact' : ''}`;
   const style = {
     ['--tag-color' as string]: STATUS_COLOR[agent.status],
     ['--role-color' as string]: ROLE_COLOR[agent.role],
   };
-  const title = `${ROLE_LABEL[agent.role]} · ${agent.name} · ${STATUS_LABEL[agent.status]}`;
+  const title = `${role} · ${agent.name} · ${statusLabel(agent.status, lang)}`;
   const body = (
     <>
       <span className="tag-dot" aria-hidden="true" />
-      <span className="tag-role">{ROLE_LABEL[agent.role]}</span>
+      <span className="tag-role">{role}</span>
       {!compact && (
         <span className="tag-name">{agent.kind === 'session' ? agent.name : shortName(agent.name)}</span>
       )}
@@ -205,6 +207,7 @@ export function SeatLabels({
 }) {
   // "Kapalıları gizle" açıkken boş masalar etiketsiz kalır (liste ile tutarlı).
   const hideOffline = useOffice((s) => s.settings.hideOffline);
+  const t = useT();
   if (hideOffline) return null;
   const byId = new Map(agents.map((a) => [a.id, a]));
   const occupied = new Map<string, Agent>();
@@ -217,7 +220,14 @@ export function SeatLabels({
     const a = occupied.get(seat.id);
     if (hiddenRoles.has(seat.role)) continue;
     if (a && a.status === 'offline' && a.kind === 'session') {
-      labels.push({ key: seat.id, x: seat.x, z: seat.z, text: 'kapalı', name: a.name, role: a.role });
+      labels.push({
+        key: seat.id,
+        x: seat.x,
+        z: seat.z,
+        text: t('status.offline'),
+        name: a.name,
+        role: a.role,
+      });
       // Aktörü henüz kurulmamış (ilk çizim) üye masada sayılır: etiket bir an kurulup hemen kalkmasın.
     } else if (
       seat.member &&
@@ -229,7 +239,7 @@ export function SeatLabels({
         key: seat.id,
         x: seat.x,
         z: seat.z,
-        text: 'masada değil',
+        text: t('seat.away'),
         name: seat.member,
         role: seat.role,
       });

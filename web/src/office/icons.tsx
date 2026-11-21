@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react';
 import type { AgentStatus } from '../../../shared/types.ts';
+import { useT } from '../store.ts';
 import type { BubbleIcon } from './sim/sim.ts';
 
 /** Balonlardaki ve etiketlerdeki simgeler (SVG; içerik yok, yalnızca simge). */
@@ -96,23 +97,8 @@ const PATHS: Record<IconName, ReactElement> = {
   moon: <path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z" />,
 };
 
-const LABEL: Record<IconName, string> = {
-  mail: 'mesaj',
-  tasks: 'görev',
-  check: 'tamamlandı',
-  coffee: 'kahve',
-  thought: 'düşünüyor',
-  question: 'seni bekliyor',
-  book: 'okuyor',
-  pen: 'yazıyor',
-  terminal: 'terminalde',
-  search: 'arıyor',
-  gear: 'çalışıyor',
-  alert: 'hata',
-  moon: 'kapalı',
-};
-
 export function Icon({ name, size = 18, label }: { name: IconName; size?: number; label?: string }) {
+  const t = useT();
   return (
     <svg
       width={size}
@@ -124,7 +110,7 @@ export function Icon({ name, size = 18, label }: { name: IconName; size?: number
       strokeLinecap="round"
       strokeLinejoin="round"
       role="img"
-      aria-label={label ?? LABEL[name]}
+      aria-label={label ?? t(`icon.${name}`)}
     >
       {PATHS[name]}
     </svg>

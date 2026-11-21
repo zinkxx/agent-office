@@ -47,8 +47,9 @@ describe('canlı akış', () => {
       file: 'theme.dart',
       at: 0,
     };
-    expect(feedText(item, false)).toBe('Tasarımcı · Edit · theme.dart');
-    expect(feedText(item, true)).toBe('Tasarımcı · Edit');
+    expect(feedText(item, false, 'tr')).toBe('Tasarımcı · Edit · theme.dart');
+    expect(feedText(item, true, 'tr')).toBe('Tasarımcı · Edit');
+    expect(feedText(item, false, 'en')).toBe('Designer · Edit · theme.dart');
   });
 
   it('sınırlı uzunluk, tekrar yok', () => {

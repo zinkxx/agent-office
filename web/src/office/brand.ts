@@ -1,3 +1,5 @@
+import { translate, type Lang } from '../i18n.ts';
+
 /** Marka seçimi: "sade" (varsayılan, genel) ya da "devtechnic". */
 export type BrandId = 'sade' | 'devtechnic';
 
@@ -8,8 +10,14 @@ export function isBrandId(v: unknown): v is BrandId {
   return typeof v === 'string' && (BRAND_IDS as readonly string[]).includes(v);
 }
 
-/** Markaya göre görünen metinler (yüzeylerdeki yazı ve başlık). */
-export function brandTexts(brand: BrandId): {
+/**
+ * Markaya göre görünen metinler (yüzeylerdeki yazı ve başlık). Sade markanın yazıları dile göre değişir;
+ * DevTechnic'in marka yazısı ve sloganı değişmez.
+ */
+export function brandTexts(
+  brand: BrandId,
+  lang: Lang,
+): {
   word: string;
   tagline: string;
   title: string;
@@ -20,9 +28,15 @@ export function brandTexts(brand: BrandId): {
     ? {
         word: 'DEVTECHNIC',
         tagline: 'DATA CENTER · YAZILIM',
-        title: 'DevTechnic · Ajan Ofisi',
+        title: `DevTechnic · ${translate(lang, 'app.name')}`,
         suffix: 'DevTechnic',
         icon: '/brand/devtechnic-icon.svg',
       }
-    : { word: 'AJAN OFİSİ', tagline: 'YAPAY ZEKÂ EKİBİ', title: 'Ajan Ofisi', suffix: null, icon: null };
+    : {
+        word: translate(lang, 'brand.word'),
+        tagline: translate(lang, 'brand.tagline'),
+        title: translate(lang, 'app.name'),
+        suffix: null,
+        icon: null,
+      };
 }

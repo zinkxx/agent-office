@@ -1,13 +1,15 @@
 import { useEffect } from 'react';
-import { ROLE_GROUP_LABEL } from './labels.ts';
+import type { Lang, MessageKey } from './i18n.ts';
+import { roleGroupLabel } from './labels.ts';
 import { LAYOUT_SNAP } from './office/sim/plan.ts';
-import { useCurrentView, useOffice, type LayoutEditorApi } from './store.ts';
+import { useCurrentView, useLang, useOffice, useT, type EditNote, type LayoutEditorApi } from './store.ts';
 
 /** Düzen düzenleme modunu açan düğme (yalnızca proje görünümünde). */
 export function EditLayoutButton() {
   const view = useCurrentView();
   const editing = useOffice((s) => s.editingLayout);
   const setEditing = useOffice((s) => s.setEditingLayout);
+  const t = useT();
   if (view.kind !== 'project') return null;
   return (
     <button
@@ -15,8 +17,8 @@ export function EditLayoutButton() {
       className={`ghost with-icon${editing ? ' on' : ''}`}
       onClick={() => setEditing(!editing)}
       aria-pressed={editing}
-      aria-label="Düzeni düzenle"
-      title="Masa adalarını sürükleyerek yerleştir"
+      aria-label={t('layout.editAria')}
+      title={t('layout.editTitle')}
     >
       <svg
         width="16"
@@ -31,25 +33,27 @@ export function EditLayoutButton() {
       >
         <path d="M12 3v18M3 12h18M12 3l-2.5 2.5M12 3l2.5 2.5M12 21l-2.5-2.5M12 21l2.5-2.5M3 12l2.5-2.5M3 12l2.5 2.5M21 12l-2.5-2.5M21 12l-2.5 2.5" />
       </svg>
-      <span className="label-text">Düzenle</span>
+      <span className="label-text">{t('layout.edit')}</span>
     </button>
   );
 }
 
 /** "Geliştirme", birden fazla aynı rol adası varsa "Geliştirme 2". */
-function islandName(editor: LayoutEditorApi, id: string): string {
+function islandName(editor: LayoutEditorApi, id: string, lang: Lang): string {
   const island = editor.islands.find((i) => i.id === id);
   if (!island) return id;
   const same = editor.islands.filter((i) => i.role === island.role);
   const n = same.indexOf(island) + 1;
-  return same.length > 1 ? `${ROLE_GROUP_LABEL[island.role]} ${n}` : ROLE_GROUP_LABEL[island.role];
+  const name = roleGroupLabel(island.role, lang);
+  return same.length > 1 ? `${name} ${n}` : name;
 }
 
-const NOTES = {
-  ok: 'Ada taşındı.',
-  blocked: 'Buraya konamaz: odanın dışında ya da başka bir adaya çok yakın.',
-  path: 'Buraya konamaz: kapıdan bazı masalara yol kapanıyor.',
-} as const;
+const NOTES: Record<EditNote, MessageKey> = {
+  ok: 'layout.note.ok',
+  blocked: 'layout.note.blocked',
+  path: 'layout.note.path',
+  reset: 'layout.note.reset',
+};
 
 /**
  * Düzenleme çubuğu: ne yapılacağını söyler, klavye için ada seçimi ve ok düğmeleri, "Varsayılana dön" ve
@@ -65,6 +69,8 @@ export function LayoutBar() {
   const setSelected = useOffice((s) => s.setEditIsland);
   const reset = useOffice((s) => s.resetLayout);
   const view = useCurrentView();
+  const t = useT();
+  const lang = useLang();
   const active = editing && view.kind === 'project' && editor !== null;
   const current =
     selected && editor?.islands.some((i) => i.id === selected) ? selected : editor?.islands[0]?.id;
@@ -74,7 +80,7 @@ export function LayoutBar() {
     const island = editor.islands.find((i) => i.id === current);
     if (!island) return;
     const result = editor.move(current, island.x + dx * LAYOUT_SNAP, island.z + dz * LAYOUT_SNAP);
-    useOffice.setState({ editNote: NOTES[result], editIsland: current });
+    useOffice.setState({ editNote: result, editIsland: current });
   };
 
   useEffect(() => {
@@ -100,41 +106,49 @@ export function LayoutBar() {
 
   if (!active || !editor) return null;
   return (
-    <section className="layout-bar glass" aria-label="Düzen düzenleme">
-      <p className="layout-help">
-        Masa adalarını sürükleyip bırak. Yeşil yere bırakılabilir, kırmızıya bırakılamaz.
-      </p>
+    <section className="layout-bar glass" aria-label={t('layout.aria')}>
+      <p className="layout-help">{t('layout.help')}</p>
       <div className="layout-controls">
         <label className="picker">
-          <span className="picker-label">Ada</span>
+          <span className="picker-label">{t('layout.island')}</span>
           <select
             value={current ?? ''}
             onChange={(e) => setSelected(e.target.value)}
-            aria-label="Taşınacak ada"
+            aria-label={t('layout.islandAria')}
           >
             {editor.islands.map((i) => (
               <option key={i.id} value={i.id}>
-                {islandName(editor, i.id)}
+                {islandName(editor, i.id, lang)}
               </option>
             ))}
           </select>
         </label>
-        <div className="nudge" role="group" aria-label="Seçili adayı taşı">
-          <button type="button" className="icon-btn" onClick={() => nudge(-1, 0)} aria-label="Sola taşı">
+        <div className="nudge" role="group" aria-label={t('layout.nudgeAria')}>
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={() => nudge(-1, 0)}
+            aria-label={t('layout.left')}
+          >
             ←
+          </button>
+          <button type="button" className="icon-btn" onClick={() => nudge(0, -1)} aria-label={t('layout.up')}>
+            ↑
           </button>
           <button
             type="button"
             className="icon-btn"
-            onClick={() => nudge(0, -1)}
-            aria-label="Pencereye doğru taşı"
+            onClick={() => nudge(0, 1)}
+            aria-label={t('layout.down')}
           >
-            ↑
-          </button>
-          <button type="button" className="icon-btn" onClick={() => nudge(0, 1)} aria-label="Öne taşı">
             ↓
           </button>
-          <button type="button" className="icon-btn" onClick={() => nudge(1, 0)} aria-label="Sağa taşı">
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={() => nudge(1, 0)}
+            aria-label={t('layout.right')}
+          >
             →
           </button>
         </div>
@@ -144,17 +158,17 @@ export function LayoutBar() {
           disabled={!hasSaved}
           onClick={() => {
             reset(editor.project);
-            useOffice.setState({ editNote: 'Düzen varsayılana döndü.' });
+            useOffice.setState({ editNote: 'reset' });
           }}
         >
-          Varsayılana dön
+          {t('layout.reset')}
         </button>
         <button type="button" className="primary" onClick={() => setEditing(false)}>
-          Bitti
+          {t('layout.done')}
         </button>
       </div>
       <p className="layout-note" role="status" aria-live="polite">
-        {note ?? ' '}
+        {note ? t(NOTES[note]) : ' '}
       </p>
     </section>
   );

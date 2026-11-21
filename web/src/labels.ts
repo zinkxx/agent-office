@@ -1,20 +1,10 @@
 import type { Activity, Agent, AgentRole, AgentStatus } from '../../shared/types.ts';
+import { translate, type Lang } from './i18n.ts';
 
-/** Durumların Türkçe adları. */
-export const STATUS_LABEL: Record<AgentStatus, string> = {
-  thinking: 'düşünüyor',
-  reading: 'okuyor',
-  writing: 'yazıyor',
-  terminal: 'terminalde',
-  searching: 'arıyor',
-  delegating: 'görev dağıtıyor',
-  messaging: 'mesaj gönderiyor',
-  asking: 'seni bekliyor',
-  working: 'çalışıyor',
-  error: 'hata',
-  idle: 'boşta',
-  offline: 'kapalı',
-};
+/** Durumun adı ("okuyor" / "reading"); `finished`: işini bitirmiş yardımcı. */
+export function statusLabel(status: AgentStatus | 'finished', lang: Lang): string {
+  return translate(lang, `status.${status}`);
+}
 
 /** "Gece" teması durum renkleri (ekran, masa lambası, listedeki nokta). */
 export const STATUS_COLOR: Record<AgentStatus, string> = {
@@ -32,29 +22,15 @@ export const STATUS_COLOR: Record<AgentStatus, string> = {
   offline: '#3b2a31',
 };
 
-/** Rollerin Türkçe adları. */
-export const ROLE_LABEL: Record<AgentRole, string> = {
-  lead: 'Takım lideri',
-  designer: 'Tasarımcı',
-  developer: 'Geliştirici',
-  tester: 'Test uzmanı',
-  reviewer: 'İnceleyici',
-  researcher: 'Araştırmacı',
-  architect: 'Mimar',
-  other: 'Ekip üyesi',
-};
+/** Rolün adı ("Geliştirici" / "Developer"). */
+export function roleLabel(role: AgentRole, lang: Lang): string {
+  return translate(lang, `role.${role}`);
+}
 
-/** Masa adalarının tabelası (grup adı). */
-export const ROLE_GROUP_LABEL: Record<AgentRole, string> = {
-  lead: 'Liderler',
-  designer: 'Tasarım',
-  developer: 'Geliştirme',
-  tester: 'Test',
-  reviewer: 'İnceleme',
-  researcher: 'Araştırma',
-  architect: 'Mimari',
-  other: 'Ekip',
-};
+/** Masa adalarının tabelası (grup adı: "Geliştirme" / "Development"). */
+export function roleGroupLabel(role: AgentRole, lang: Lang): string {
+  return translate(lang, `group.${role}`);
+}
 
 /** Rol rengi (filtre çipleri, listedeki rozet, masa adası tabelası). */
 export const ROLE_COLOR: Record<AgentRole, string> = {
@@ -100,24 +76,26 @@ export function activityText(activity: Activity | undefined, hideFiles = false):
 }
 
 /** "1 sa 12 dk", "8 dk", "40 sn": çalışma süresi. */
-export function durationText(ms: number): string {
+export function durationText(ms: number, lang: Lang): string {
   const s = Math.max(0, Math.floor(ms / 1000));
-  if (s < 60) return `${s} sn`;
+  if (s < 60) return translate(lang, 'time.seconds', { n: s });
   const m = Math.floor(s / 60);
-  if (m < 60) return `${m} dk`;
+  if (m < 60) return translate(lang, 'time.minutes', { n: m });
   const h = Math.floor(m / 60);
-  return m % 60 ? `${h} sa ${m % 60} dk` : `${h} sa`;
+  return m % 60
+    ? translate(lang, 'time.hoursMinutes', { h, m: m % 60 })
+    : translate(lang, 'time.hours', { n: h });
 }
 
 /** "az önce", "3 dk önce", "2 sa önce". */
-export function agoText(at: number, now: number): string {
+export function agoText(at: number, now: number, lang: Lang): string {
   const s = Math.max(0, Math.round((now - at) / 1000));
-  if (s < 45) return 'az önce';
+  if (s < 45) return translate(lang, 'time.justNow');
   const m = Math.round(s / 60);
-  if (m < 60) return `${m} dk önce`;
+  if (m < 60) return translate(lang, 'time.minutesAgo', { n: m });
   const h = Math.round(m / 60);
-  if (h < 24) return `${h} sa önce`;
-  return `${Math.round(h / 24)} gün önce`;
+  if (h < 24) return translate(lang, 'time.hoursAgo', { n: h });
+  return translate(lang, 'time.daysAgo', { n: Math.round(h / 24) });
 }
 
 export interface ProjectGroup {

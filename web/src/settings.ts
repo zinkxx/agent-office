@@ -1,4 +1,5 @@
 import { AGENT_ROLES, type Agent, type AgentRole } from '../../shared/types.ts';
+import { defaultLang, isLang, type Lang, type MessageKey } from './i18n.ts';
 import { isActive } from './labels.ts';
 import { MASCOT_KINDS, type MascotKind } from './office/sim/mascot.ts';
 import { DEFAULT_BRAND, isBrandId, type BrandId } from './office/brand.ts';
@@ -9,18 +10,18 @@ export type { ThemeId };
 /** Hareket tercihi: işletim sistemini izle, her zaman azalt ya da her zaman tam. */
 export type MotionPref = 'system' | 'reduce' | 'full';
 
-/** Karakter kıyafeti için hazır renkler (adları ekran okuyucu ve ipucu için). */
-export const OUTFIT_COLORS: readonly { color: string; name: string }[] = [
-  { color: '#e0465a', name: 'Kırmızı' },
-  { color: '#ff8a3d', name: 'Turuncu' },
-  { color: '#ffc847', name: 'Sarı' },
-  { color: '#3fbf7f', name: 'Yeşil' },
-  { color: '#2fb3c9', name: 'Turkuaz' },
-  { color: '#4a7bff', name: 'Mavi' },
-  { color: '#8f6bff', name: 'Mor' },
-  { color: '#e46ad0', name: 'Pembe' },
-  { color: '#ece6df', name: 'Beyaz' },
-  { color: '#33323c', name: 'Antrasit' },
+/** Karakter kıyafeti için hazır renkler (adlarının sözlük anahtarı ekran okuyucu ve ipucu için). */
+export const OUTFIT_COLORS: readonly { color: string; name: MessageKey }[] = [
+  { color: '#e0465a', name: 'outfit.red' },
+  { color: '#ff8a3d', name: 'outfit.orange' },
+  { color: '#ffc847', name: 'outfit.yellow' },
+  { color: '#3fbf7f', name: 'outfit.green' },
+  { color: '#2fb3c9', name: 'outfit.teal' },
+  { color: '#4a7bff', name: 'outfit.blue' },
+  { color: '#8f6bff', name: 'outfit.purple' },
+  { color: '#e46ad0', name: 'outfit.pink' },
+  { color: '#ece6df', name: 'outfit.white' },
+  { color: '#33323c', name: 'outfit.charcoal' },
 ];
 
 /** Bir rolün özelleştirmesi: kıyafet rengi (yoksa otomatik) ve rol aksesuarı (varsayılan açık). */
@@ -29,10 +30,16 @@ export interface RoleLook {
   accessories?: boolean;
 }
 
-export const MASCOT_LABEL: Record<MascotKind, string> = { cat: 'Kedi', dog: 'Köpek', robot: 'Robot' };
+export const MASCOT_LABEL: Record<MascotKind, MessageKey> = {
+  cat: 'mascotKind.cat',
+  dog: 'mascotKind.dog',
+  robot: 'mascotKind.robot',
+};
 
 /** Tarayıcıda saklanan kullanıcı ayarları. */
 export interface Settings {
+  /** Arayüz dili. */
+  language: Lang;
   theme: ThemeId;
   /** Marka: sade (varsayılan) ya da DevTechnic yüzeyleri. */
   brand: BrandId;
@@ -56,6 +63,8 @@ export interface Settings {
 }
 
 export const DEFAULT_SETTINGS: Settings = {
+  // Tarayıcı dili bilinmiyorsa geçerli olan; gerçek varsayılanı `parseSettings`'e verilen tarayıcı dili belirler.
+  language: defaultLang(undefined),
   theme: DEFAULT_THEME,
   brand: DEFAULT_BRAND,
   hideFiles: false,
@@ -78,8 +87,13 @@ const MOTIONS: MotionPref[] = ['system', 'reduce', 'full'];
 /**
  * Saklanan metni ayarlara çevirir. Bozuk ya da eksik alanlar varsayılana döner; bilinmeyen alanlar atılır.
  * `legacyHideFiles`: eski tek anahtarın değeri (yeni ayar hiç kaydedilmemişse kullanılır).
+ * `fallbackLanguage`: dil kaydedilmemişse ya da geçersizse kullanılan (tarayıcı diline göre, bkz. `defaultLang`).
  */
-export function parseSettings(raw: string | null, legacyHideFiles: string | null = null): Settings {
+export function parseSettings(
+  raw: string | null,
+  legacyHideFiles: string | null = null,
+  fallbackLanguage: Lang = DEFAULT_SETTINGS.language,
+): Settings {
   let data: Record<string, unknown> = {};
   if (raw) {
     try {
@@ -101,6 +115,7 @@ export function parseSettings(raw: string | null, legacyHideFiles: string | null
   const motion = MOTIONS.includes(data.motion as MotionPref) ? (data.motion as MotionPref) : 'system';
   const theme = isThemeId(data.theme) ? data.theme : DEFAULT_SETTINGS.theme;
   return {
+    language: isLang(data.language) ? data.language : fallbackLanguage,
     looks: parseLooks(data.looks),
     mascots: parseMascots(data.mascots),
     theme,

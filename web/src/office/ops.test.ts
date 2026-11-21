@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Agent } from '../../../shared/types.ts';
-import { ROLE_LABEL } from '../labels.ts';
+import { roleLabel } from '../labels.ts';
 import { buildState, kanbanNotes, opsStats, presence, rackLevel, KANBAN_MAX } from './ops.ts';
 
 function agent(id: string, extra: Partial<Agent> = {}): Agent {
@@ -91,7 +91,7 @@ describe('giriş ekranı', () => {
       sub('s2', { role: 'researcher' }),
       sub('s3', { status: 'idle' }),
     ];
-    const list = presence(agents, members, new Set(['gelistirici']), (r) => ROLE_LABEL[r]);
+    const list = presence(agents, members, new Set(['gelistirici']), (r) => roleLabel(r, 'tr'));
     expect(list).toEqual([
       { role: 'lead', label: 'proje-1', working: true },
       { role: 'developer', label: 'gelistirici', working: true },

@@ -7,6 +7,7 @@ import {
   type Texture,
 } from 'three';
 import { brandTexts, type BrandId } from './brand.ts';
+import { translate, type Lang } from '../i18n.ts';
 import type { OfficeTheme } from './themes.ts';
 
 /**
@@ -377,8 +378,8 @@ export function brandLogoTexture(brand: BrandId = 'sade'): Texture {
 }
 
 /** Marka yazısı (harf aralıklı, büyük harf). 8:1, saydam zemin. */
-export function brandWordTexture(color: string, brand: BrandId = 'sade'): Texture {
-  const text = brandTexts(brand).word;
+export function brandWordTexture(color: string, brand: BrandId = 'sade', lang: Lang = 'tr'): Texture {
+  const text = brandTexts(brand, lang).word;
   return once(`brand-word-${color}-${text}`, () => {
     const [c, g] = canvas(1024, 128);
     g.fillStyle = color;
@@ -413,16 +414,16 @@ function paintEmblem(
 }
 
 /** Lider köşesindeki plaket: lacivert zemin, çerçeve, simge ve yazı. 3:2. */
-export function brandPlaqueTexture(brand: BrandId = 'sade'): Texture {
+export function brandPlaqueTexture(brand: BrandId = 'sade', lang: Lang = 'tr'): Texture {
   const accent = brand === 'devtechnic' ? BRAND.gold : BRAND.teal;
-  return brandTexture(brand, 'brand-plaque', 480, 320, ICON_URL, (g, img) => {
+  return brandTexture(brand, `brand-plaque-${lang}`, 480, 320, ICON_URL, (g, img) => {
     g.fillStyle = BRAND.navy;
     g.fillRect(0, 0, 480, 320);
     g.strokeStyle = accent;
     g.lineWidth = 6;
     g.strokeRect(14, 14, 452, 292);
     paintEmblem(g, brand, img, 170, 42, 140);
-    const t = brandTexts(brand);
+    const t = brandTexts(brand, lang);
     g.fillStyle = brand === 'devtechnic' ? BRAND.gold : '#ffffff';
     g.font = `600 38px ${BRAND_FONT}`;
     spacedText(g, t.word, 240, 230, 9);
@@ -432,10 +433,10 @@ export function brandPlaqueTexture(brand: BrandId = 'sade'): Texture {
   });
 }
 
-/** Giriş paspası: lacivert zemin, kenar, simge ve "HOŞ GELDİNİZ". Kare. */
-export function entranceMatTexture(brand: BrandId = 'sade'): Texture {
+/** Giriş paspası: lacivert zemin, kenar, simge ve "HOŞ GELDİNİZ" / "WELCOME". Kare. */
+export function entranceMatTexture(brand: BrandId = 'sade', lang: Lang = 'tr'): Texture {
   const accent = brand === 'devtechnic' ? BRAND.gold : BRAND.teal;
-  return brandTexture(brand, 'brand-mat', 384, 384, ICON_URL, (g, img) => {
+  return brandTexture(brand, `brand-mat-${lang}`, 384, 384, ICON_URL, (g, img) => {
     g.fillStyle = BRAND.navy;
     g.fillRect(0, 0, 384, 384);
     const r = rng(9);
@@ -449,10 +450,10 @@ export function entranceMatTexture(brand: BrandId = 'sade'): Texture {
     paintEmblem(g, brand, img, 122, 70, 140);
     g.fillStyle = brand === 'devtechnic' ? BRAND.gold : '#ffffff';
     g.font = `600 30px ${BRAND_FONT}`;
-    spacedText(g, 'HOŞ GELDİNİZ', 192, 266, 5);
+    spacedText(g, translate(lang, 'brand.welcome'), 192, 266, 5);
     g.fillStyle = 'rgba(226, 232, 240, 0.7)';
     g.font = `500 22px ${BRAND_FONT}`;
-    spacedText(g, brandTexts(brand).word, 192, 306, 6);
+    spacedText(g, brandTexts(brand, lang).word, 192, 306, 6);
   });
 }
 

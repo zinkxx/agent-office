@@ -3,8 +3,8 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { Vector3 } from 'three';
 import type { Agent, AgentRole, Letter, TeamMember } from '../../../../shared/types.ts';
-import { ROLE_COLOR, ROLE_GROUP_LABEL } from '../../labels.ts';
-import { useBrand, useOffice, useTheme } from '../../store.ts';
+import { ROLE_COLOR, roleGroupLabel } from '../../labels.ts';
+import { useBrand, useLang, useOffice, useTheme } from '../../store.ts';
 import { frameBox, frameOffice } from '../framing.ts';
 import { Label } from '../Label.tsx';
 import type { ScreenBank } from '../screens.ts';
@@ -194,6 +194,7 @@ export function ProjectScene({
   const scene = useThree((s) => s.scene);
   const theme = useTheme();
   const brand = useBrand();
+  const lang = useLang();
 
   // Kat planı: önceki atamalar korunur (karakterler yer değiştirmesin).
   const planRef = useRef<OfficePlan | null>(null);
@@ -343,7 +344,7 @@ export function ProjectScene({
         <Door layout={layout} sim={sim} reduced={reduced} theme={theme} />
         <Exterior plan={plan} theme={theme} reduced={reduced} />
         <Tower plan={plan} theme={theme} />
-        <BrandSurfaces layout={layout} theme={theme} brand={brand} />
+        <BrandSurfaces layout={layout} theme={theme} brand={brand} lang={lang} />
         <Screens spots={layout.screens} plan={plan} agents={agents} sim={sim} bank={bank} reduced={reduced} />
         <TechOps plan={plan} agents={agents} team={team} sim={sim} reduced={reduced} />
         {agents.map((a) => (
@@ -373,7 +374,7 @@ export function ProjectScene({
         {layout.islandLabels.map((l, i) => (
           <Label key={`${l.role}${i}`} kind="sign" position={[l.x, 0.05, l.z]}>
             <div className="island-sign" style={{ ['--role-color' as string]: ROLE_COLOR[l.role] }}>
-              {ROLE_GROUP_LABEL[l.role]}
+              {roleGroupLabel(l.role, lang)}
             </div>
           </Label>
         ))}

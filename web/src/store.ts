@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { AgentRole, OfficeSnapshot, ServerMessage } from '../../shared/types.ts';
 import { appendFeed, newFeedItems, type FeedItem } from './feed.ts';
+import { browserLanguage, defaultLang, translate, translator, type Lang, type Translate } from './i18n.ts';
 import { LAYOUTS_KEY, parseLayouts, withIsland, withoutProject, type SavedLayouts } from './layouts.ts';
 import {
   LEGACY_HIDE_FILES_KEY,
@@ -21,6 +22,15 @@ function applyTheme(id: ThemeId): void {
     for (const [name, value] of Object.entries(cssVariables(themeById(id))))
       root.style.setProperty(name, value);
     root.dataset.theme = id;
+  } catch {
+    /* test ortamında sayfa yok */
+  }
+}
+/** Sayfanın dilini ve sekme başlığını uygular. */
+function applyLanguage(lang: Lang): void {
+  try {
+    document.documentElement.lang = lang;
+    document.title = translate(lang, 'app.name');
   } catch {
     /* test ortamında sayfa yok */
   }
@@ -57,8 +67,8 @@ interface OfficeState {
   editingLayout: boolean;
   /** Düzenleyicide seçili ada (klavyeyle taşımak için). */
   editIsland: string | null;
-  /** Düzenleyicinin son bildirimi ("Ada taşındı." vb.). */
-  editNote: string | null;
+  /** Düzenleyicinin son bildirimi (taşıma sonucu ya da varsayılana dönüş; metni dile göre çizilir). */
+  editNote: EditNote | null;
   /** Proje sahnesinin düzenleyiciye sunduğu adalar ve taşıma işlemi (sahne açıkken dolu). */
   layoutEditor: LayoutEditorApi | null;
   /** Hatırlanan proje seçimi: "*" = tüm projeler, null = otomatik (en son etkin proje). */
@@ -89,6 +99,9 @@ const VIEW_KEY = 'ajan-ofisi:proje';
 /** Taşıma sonucu: tamam, yer yok (oda dışı / çakışma), yol kapanıyor. */
 export type MoveResult = 'ok' | 'blocked' | 'path';
 
+/** Düzenleme çubuğundaki bildirim: taşıma sonucu ya da "düzen varsayılana döndü". */
+export type EditNote = MoveResult | 'reset';
+
 export interface LayoutEditorApi {
   project: string;
   islands: { id: string; role: AgentRole; x: number; z: number }[];
@@ -114,9 +127,13 @@ function storeLayouts(layouts: SavedLayouts): void {
 
 function loadSettings(): Settings {
   try {
-    return parseSettings(localStorage.getItem(SETTINGS_KEY), localStorage.getItem(LEGACY_HIDE_FILES_KEY));
+    return parseSettings(
+      localStorage.getItem(SETTINGS_KEY),
+      localStorage.getItem(LEGACY_HIDE_FILES_KEY),
+      defaultLang(browserLanguage()),
+    );
   } catch {
-    return parseSettings(null);
+    return parseSettings(null, null, defaultLang(browserLanguage()));
   }
 }
 
@@ -143,6 +160,7 @@ function prefersReducedMotion(): boolean {
 
 const initialSettings = loadSettings();
 applyTheme(initialSettings.theme);
+applyLanguage(initialSettings.language);
 const initialSystemReduced = prefersReducedMotion();
 
 /** Sesli uyarıları çalan tek çalar. */
@@ -193,6 +211,7 @@ export const useOffice = create<OfficeState>((set, get) => ({
   updateSettings: (patch) => {
     const settings = { ...get().settings, ...patch };
     if (settings.theme !== get().settings.theme) applyTheme(settings.theme);
+    if (settings.language !== get().settings.language) applyLanguage(settings.language);
     try {
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     } catch {
@@ -320,6 +339,16 @@ export function startConnection(): void {
   };
   window.addEventListener('pointerdown', unlock, { passive: true });
   window.addEventListener('keydown', unlock);
+}
+
+/** Seçili arayüz dili. */
+export function useLang(): Lang {
+  return useOffice((s) => s.settings.language);
+}
+
+/** Seçili dilde çeviri fonksiyonu: `t('settings.title')`, `t('list.agents', { n: 3 })`. */
+export function useT(): Translate {
+  return translator(useLang());
 }
 
 /** Rolün kullanıcı özelleştirmesi (kıyafet rengi, aksesuar). */

@@ -54,6 +54,17 @@ describe('parseSettings', () => {
     expect(parseSettings('{"volume":-3}').volume).toBe(0);
   });
 
+  it('dil: kayıtlı geçerli dil okunur; yoksa ya da geçersizse tarayıcıya göre varsayılan', () => {
+    expect(parseSettings('{"language":"tr"}', null, 'en').language).toBe('tr');
+    expect(parseSettings('{"language":"en"}', null, 'tr').language).toBe('en');
+    expect(parseSettings('{"language":"de"}', null, 'tr').language).toBe('tr');
+    expect(parseSettings('{"language":7}', null, 'en').language).toBe('en');
+    expect(parseSettings('{}', null, 'tr').language).toBe('tr');
+    expect(parseSettings(null, null, 'tr').language).toBe('tr');
+    expect(parseSettings('{bozuk', null, 'en').language).toBe('en');
+    expect(parseSettings(null).language).toBe(DEFAULT_SETTINGS.language);
+  });
+
   it('düşük güç modu varsayılan kapalı, kayıtlıysa okunur', () => {
     expect(DEFAULT_SETTINGS.lowPower).toBe(false);
     expect(parseSettings('{}').lowPower).toBe(false);

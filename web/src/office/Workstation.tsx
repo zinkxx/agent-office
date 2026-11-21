@@ -2,8 +2,8 @@ import { useFrame, type ThreeEvent } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import type { MeshStandardMaterial, PointLight } from 'three';
 import type { Agent } from '../../../shared/types.ts';
-import { STATUS_COLOR, STATUS_LABEL, isActive } from '../labels.ts';
-import { useOffice, useRoleLook, useTheme } from '../store.ts';
+import { STATUS_COLOR, isActive, statusLabel } from '../labels.ts';
+import { useLang, useOffice, useRoleLook, useTheme } from '../store.ts';
 import { Character, lookFor, type CharacterDrive } from './Character.tsx';
 import { Icon, STATUS_ICON } from './icons.tsx';
 import { Label } from './Label.tsx';
@@ -52,6 +52,7 @@ function NameTag({
   showName?: boolean;
 }) {
   const selected = useOffice((s) => s.selectedId === agent.id);
+  const status = statusLabel(agent.status, useLang());
   return (
     <div
       className={`tag${small ? ' small' : ''}${selected ? ' selected' : ''}${
@@ -59,10 +60,10 @@ function NameTag({
       }`}
       style={{ ['--tag-color' as string]: STATUS_COLOR[agent.status] }}
       onClick={() => useOffice.getState().select(agent.id)}
-      title={`${agent.name} · ${STATUS_LABEL[agent.status]}`}
+      title={`${agent.name} · ${status}`}
     >
       <span className="tag-icon">
-        <Icon name={STATUS_ICON[agent.status]} size={small ? 11 : 13} label={STATUS_LABEL[agent.status]} />
+        <Icon name={STATUS_ICON[agent.status]} size={small ? 11 : 13} label={status} />
       </span>
       {showName && <span className="tag-name">{agent.name}</span>}
     </div>

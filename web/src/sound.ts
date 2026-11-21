@@ -1,4 +1,5 @@
 import type { OfficeSnapshot } from '../../shared/types.ts';
+import type { MessageKey } from './i18n.ts';
 import { isActive } from './labels.ts';
 
 /**
@@ -9,10 +10,11 @@ import { isActive } from './labels.ts';
  */
 export type Cue = 'ask' | 'done' | 'letter';
 
-export const CUE_LABEL: Record<Cue, string> = {
-  ask: 'Biri seni bekliyor',
-  done: 'Yardımcı işini bitirdi',
-  letter: 'Oturumlar arası mesaj',
+/** Uyarının açıklamasının sözlük anahtarı ("Biri seni bekliyor" / "Someone is waiting for you"). */
+export const CUE_LABEL: Record<Cue, MessageKey> = {
+  ask: 'cue.ask',
+  done: 'cue.done',
+  letter: 'cue.letter',
 };
 
 /** İki anlık görüntü arasındaki uyarılar. İlk görüntüde (sayfa açılışı) hiçbir ses çalınmaz. */
