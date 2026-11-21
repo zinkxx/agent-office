@@ -7,7 +7,7 @@
     "dev": "tsx watch src/main.ts"
   },
   "dependencies": {
-    "chokidar": "^4.0.3",
+    "chokidar": "^6.0.0",
     "ws": "^8.23.0"
   },
   "devDependencies": {
