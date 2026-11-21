@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Agent } from '../../../shared/types.ts';
-import { activityText, agoText, groupByProject, STATUS_LABEL } from '../labels.ts';
+import { activityText, agoText, groupByProject, statusLabel } from '../labels.ts';
 import { parseServerMessage } from '../store.ts';
 import { computeLayout, MAX_VISIBLE_SUBAGENTS, positionOf } from './layout.ts';
 
@@ -88,13 +88,19 @@ describe('etiketler', () => {
     expect(activityText({ tool: 'Edit', file: 'pressable.dart', at: 0 }, true)).toBe('Edit');
     expect(activityText(undefined)).toBeUndefined();
   });
-  it('durumlar Türkçe', () => {
-    expect(STATUS_LABEL.asking).toBe('seni bekliyor');
-    expect(STATUS_LABEL.terminal).toBe('terminalde');
+  it('durumlar Türkçe ve İngilizce', () => {
+    expect(statusLabel('asking', 'tr')).toBe('seni bekliyor');
+    expect(statusLabel('terminal', 'tr')).toBe('terminalde');
+    expect(statusLabel('asking', 'en')).toBe('waiting for you');
+    expect(statusLabel('finished', 'en')).toBe('finished');
   });
   it('geçen süre', () => {
-    expect(agoText(0, 10_000)).toBe('az önce');
-    expect(agoText(0, 5 * 60_000)).toBe('5 dk önce');
+    expect(agoText(0, 10_000, 'tr')).toBe('az önce');
+    expect(agoText(0, 5 * 60_000, 'tr')).toBe('5 dk önce');
+    expect(agoText(0, 10_000, 'en')).toBe('just now');
+    expect(agoText(0, 5 * 60_000, 'en')).toBe('5 min ago');
+    expect(agoText(0, 30 * 3_600_000, 'en')).toBe('1 day ago');
+    expect(agoText(0, 72 * 3_600_000, 'en')).toBe('3 days ago');
   });
 });
 

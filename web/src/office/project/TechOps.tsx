@@ -16,8 +16,9 @@ import {
 } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type { Agent, AgentRole, TeamMember } from '../../../../shared/types.ts';
-import { ROLE_COLOR, ROLE_LABEL } from '../../labels.ts';
-import { useOffice } from '../../store.ts';
+import { translator, type Translate } from '../../i18n.ts';
+import { ROLE_COLOR, roleLabel } from '../../labels.ts';
+import { useLang, useOffice } from '../../store.ts';
 import {
   BUILD_COLOR,
   BUILD_TEXT,
@@ -64,6 +65,7 @@ export function TechOps({
   sim: OfficeSim;
   reduced: boolean;
 }) {
+  const lang = useLang();
   const data = useMemo(() => {
     // Ekip üyesinin masasında çalışan bir yardımcı varsa üye "çalışıyor"; yoksa ofiste boşta.
     const byId = new Map(agents.map((a) => [a.id, a]));
@@ -79,10 +81,11 @@ export function TechOps({
       state: buildState(agents),
       level: rackLevel(agents),
       notes: kanbanNotes(agents),
-      people: presence(agents, members, busyMembers, (r) => ROLE_LABEL[r]),
+      people: presence(agents, members, busyMembers, (r) => roleLabel(r, lang)),
       idleMembers: members.length - [...busyMembers].filter((m) => members.some((x) => x.name === m)).length,
+      t: translator(lang),
     };
-  }, [agents, plan, team]);
+  }, [agents, plan, team, lang]);
   const live = useRef({ ...data, agents });
   live.current = { ...data, agents };
 
@@ -106,6 +109,8 @@ interface Live {
   people: Presence[];
   idleMembers: number;
   agents: readonly Agent[];
+  /** Kanvas yazıları için seçili dilde çeviri. */
+  t: Translate;
 }
 type LiveRef = { current: Live };
 
@@ -289,8 +294,8 @@ function Dashboard({ plan, live, reduced }: { plan: OfficePlan; live: LiveRef; r
   const serverNow = useOffice((s) => s.clockOffset);
   useFrame(() => {
     if (!due(performance.now())) return;
-    const { agents, idleMembers, state } = live.current;
-    drawDashboard(g, opsStats(agents, idleMembers, Date.now() + serverNow), state);
+    const { agents, idleMembers, state, t } = live.current;
+    drawDashboard(g, opsStats(agents, idleMembers, Date.now() + serverNow), state, t);
     texture.needsUpdate = true;
   });
   const db = plan.zones.tech.dashboard;
@@ -301,7 +306,7 @@ function Dashboard({ plan, live, reduced }: { plan: OfficePlan; live: LiveRef; r
   );
 }
 
-function drawDashboard(g: CanvasRenderingContext2D, s: OpsStats, state: BuildState): void {
+function drawDashboard(g: CanvasRenderingContext2D, s: OpsStats, state: BuildState, t: Translate): void {
   const W = 512;
   const H = 290;
   g.fillStyle = '#0d1020';
@@ -310,7 +315,7 @@ function drawDashboard(g: CanvasRenderingContext2D, s: OpsStats, state: BuildSta
   g.fillStyle = '#e9ecf5';
   g.font = `700 22px ${FONT}`;
   g.textBaseline = 'middle';
-  g.fillText('Canlı durum', 20, 26);
+  g.fillText(t('ops.title'), 20, 26);
   g.font = `600 22px ${FONT}`;
   g.textAlign = 'right';
   g.fillText(clock(), W - 20, 26);
@@ -320,7 +325,7 @@ function drawDashboard(g: CanvasRenderingContext2D, s: OpsStats, state: BuildSta
   roundRect(g, 20, 48, 200, 30, 15);
   g.fillStyle = '#0d1020';
   g.font = `700 16px ${FONT}`;
-  g.fillText(BUILD_TEXT[state], 36, 64);
+  g.fillText(t(BUILD_TEXT[state]), 36, 64);
   // sayılar
   const tile = (x: number, label: string, value: number, color: string) => {
     g.fillStyle = '#161a30';
@@ -332,9 +337,9 @@ function drawDashboard(g: CanvasRenderingContext2D, s: OpsStats, state: BuildSta
     g.font = `600 15px ${FONT}`;
     g.fillText(label, x + 14, 154);
   };
-  tile(20, 'çalışıyor', s.working, '#3fe07f');
-  tile(181, 'boşta', s.idle, '#ffc23a');
-  tile(342, 'işlem · 10 dk', s.total, '#6fc8ff');
+  tile(20, t('ops.working'), s.working, '#3fe07f');
+  tile(181, t('ops.idle'), s.idle, '#ffc23a');
+  tile(342, t('ops.actions'), s.total, '#6fc8ff');
   // son 10 dakika
   g.fillStyle = '#161a30';
   roundRect(g, 20, 184, 472, 90, 10);
@@ -347,14 +352,14 @@ function drawDashboard(g: CanvasRenderingContext2D, s: OpsStats, state: BuildSta
   });
   g.fillStyle = '#5c6688';
   g.font = `500 12px ${FONT}`;
-  g.fillText('son 10 dakika', 36, 198);
+  g.fillText(t('ops.last10'), 36, 198);
 }
 
 // ---------- kanban ----------
 
 const KB_W = 512;
 const KB_H = 290;
-const COLS = ['Yapılacak', 'Yapılıyor', 'Bitti'];
+const COLS = ['kanban.todo', 'kanban.doing', 'kanban.done'] as const;
 
 function Kanban({ plan, live, reduced }: { plan: OfficePlan; live: LiveRef; reduced: boolean }) {
   const { g, texture, material } = useCanvas(KB_W, KB_H);
@@ -389,7 +394,7 @@ function Kanban({ plan, live, reduced }: { plan: OfficePlan; live: LiveRef; redu
     for (const id of [...p.keys()]) if (!targets.has(id)) p.delete(id);
     if (!moving && now - lastStill.current < 1000) return;
     lastStill.current = now;
-    drawKanban(g, live.current.notes, p);
+    drawKanban(g, live.current.notes, p, live.current.t);
     texture.needsUpdate = true;
   });
   const kb = plan.zones.tech.kanban;
@@ -417,6 +422,7 @@ function drawKanban(
   g: CanvasRenderingContext2D,
   notes: readonly KanbanNote[],
   pos: ReadonlyMap<string, { x: number; y: number }>,
+  t: Translate,
 ): void {
   g.fillStyle = '#f4f5f7';
   g.fillRect(0, 0, KB_W, KB_H);
@@ -427,7 +433,7 @@ function drawKanban(
     g.fillStyle = ['#8a8e96', '#2b6bd8', '#1f9a5a'][i]!;
     g.font = `700 17px ${FONT}`;
     g.textBaseline = 'middle';
-    g.fillText(name, x + 10, 28);
+    g.fillText(t(name), x + 10, 28);
   });
   for (const note of notes) {
     const p = pos.get(note.id);
@@ -460,11 +466,11 @@ function Entrance({ plan, live }: { plan: OfficePlan; live: LiveRef }) {
   const last = useRef('');
   useFrame(() => {
     // yalnızca liste ya da saat değişince çizilir
-    const people = live.current.people;
-    const key = `${clock()}|${people.map((p) => `${p.role}:${p.label}:${p.working}`).join(',')}`;
+    const { people, t } = live.current;
+    const key = `${clock()}|${t('entrance.today', { n: '' })}|${people.map((p) => `${p.role}:${p.label}:${p.working}`).join(',')}`;
     if (key === last.current) return;
     last.current = key;
-    drawEntrance(g, people);
+    drawEntrance(g, people, t);
     texture.needsUpdate = true;
   });
   return (
@@ -478,7 +484,7 @@ function Entrance({ plan, live }: { plan: OfficePlan; live: LiveRef }) {
   );
 }
 
-function drawEntrance(g: CanvasRenderingContext2D, people: readonly Presence[]): void {
+function drawEntrance(g: CanvasRenderingContext2D, people: readonly Presence[], t: Translate): void {
   const W = 576;
   const H = 200;
   g.fillStyle = '#0d1020';
@@ -486,7 +492,7 @@ function drawEntrance(g: CanvasRenderingContext2D, people: readonly Presence[]):
   g.textBaseline = 'middle';
   g.fillStyle = '#d9a441';
   g.font = `700 24px ${FONT}`;
-  g.fillText(`Bugün ofiste · ${people.length}`, 18, 26);
+  g.fillText(t('entrance.today', { n: people.length }), 18, 26);
   g.fillStyle = '#e9ecf5';
   g.textAlign = 'right';
   g.fillText(clock(), W - 18, 26);

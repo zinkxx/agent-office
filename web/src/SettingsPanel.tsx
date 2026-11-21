@@ -1,12 +1,13 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { AGENT_ROLES, type AgentRole } from '../../shared/types.ts';
-import { ROLE_COLOR, ROLE_LABEL } from './labels.ts';
+import { LANG_NAME, LANGS, type MessageKey } from './i18n.ts';
+import { ROLE_COLOR, roleLabel } from './labels.ts';
 import { MASCOT_KINDS, type MascotKind } from './office/sim/mascot.ts';
 import type { BrandId } from './office/brand.ts';
 import { THEMES } from './office/themes.ts';
 import { MASCOT_LABEL, OUTFIT_COLORS, type MotionPref, type RoleLook } from './settings.ts';
 import { CUE_LABEL, type Cue } from './sound.ts';
-import { sounds, useCurrentView, useOffice } from './store.ts';
+import { sounds, useCurrentView, useLang, useOffice, useT } from './store.ts';
 
 /** Açma/kapama anahtarı: gerçek onay kutusu (klavye ve ekran okuyucu için), görünüşü anahtar. */
 function Switch({
@@ -43,30 +44,36 @@ function Switch({
   );
 }
 
-const BRAND_OPTIONS: { value: BrandId; label: string }[] = [
-  { value: 'sade', label: 'Sade' },
-  { value: 'devtechnic', label: 'DevTechnic' },
+/** Seçenek adı: sözlük anahtarı ya da (marka adı gibi) çevrilmeyen sabit metin. */
+const BRAND_OPTIONS: { value: BrandId; label: MessageKey | { text: string } }[] = [
+  { value: 'sade', label: 'settings.brandPlain' },
+  { value: 'devtechnic', label: { text: 'DevTechnic' } },
 ];
 
-const MOTION_OPTIONS: { value: MotionPref; label: string }[] = [
-  { value: 'system', label: 'Sistem gibi' },
-  { value: 'reduce', label: 'Azalt' },
-  { value: 'full', label: 'Tam' },
+const MOTION_OPTIONS: { value: MotionPref; label: MessageKey }[] = [
+  { value: 'system', label: 'settings.motion.system' },
+  { value: 'reduce', label: 'settings.motion.reduce' },
+  { value: 'full', label: 'settings.motion.full' },
 ];
 
 const CUES: Cue[] = ['ask', 'done', 'letter'];
-const CUE_SHORT: Record<Cue, string> = { ask: 'Bekliyor', done: 'Bitti', letter: 'Mesaj' };
+const CUE_SHORT: Record<Cue, MessageKey> = {
+  ask: 'cueShort.ask',
+  done: 'cueShort.done',
+  letter: 'cueShort.letter',
+};
 
 export function SettingsButton() {
   const open = useOffice((s) => s.settingsOpen);
   const setOpen = useOffice((s) => s.setSettingsOpen);
+  const t = useT();
   return (
     <button
       type="button"
       id="settings-button"
       className="ghost with-icon"
       onClick={() => setOpen(!open)}
-      aria-label="Ayarlar"
+      aria-label={t('settings.title')}
       aria-expanded={open}
       aria-controls="settings-panel"
     >
@@ -84,7 +91,7 @@ export function SettingsButton() {
         <circle cx="10" cy="12" r="2" />
         <circle cx="18" cy="18" r="2" />
       </svg>
-      <span className="label-text">Ayarlar</span>
+      <span className="label-text">{t('settings.title')}</span>
     </button>
   );
 }
@@ -95,6 +102,8 @@ function CharacterSettings() {
   const update = useOffice((s) => s.updateSettings);
   const [role, setRole] = useState<AgentRole>('developer');
   const id = useId();
+  const t = useT();
+  const lang = useLang();
   const look = looks[role] ?? {};
   const setLook = (patch: RoleLook) => {
     const next: RoleLook = { ...look, ...patch };
@@ -107,10 +116,10 @@ function CharacterSettings() {
   };
   return (
     <fieldset className="settings-group">
-      <legend>Karakterler</legend>
+      <legend>{t('settings.characters')}</legend>
       <div className="setting-item">
         <label className="setting-label" htmlFor={`${id}-role`}>
-          Rol
+          {t('settings.role')}
         </label>
         <select
           id={`${id}-role`}
@@ -120,24 +129,27 @@ function CharacterSettings() {
         >
           {AGENT_ROLES.map((r) => (
             <option key={r} value={r}>
-              {ROLE_LABEL[r]}
-              {looks[r] ? ' (özel)' : ''}
+              {roleLabel(r, lang)}
+              {looks[r] ? t('settings.custom') : ''}
             </option>
           ))}
         </select>
       </div>
       <div className="setting-item">
         <span className="setting-label" id={`${id}-outfit`}>
-          Kıyafet rengi
+          {t('settings.outfit')}
         </span>
         <div className="swatches" role="radiogroup" aria-labelledby={`${id}-outfit`}>
-          <label className={`swatch-option auto${look.outfit ? '' : ' on'}`} title="Otomatik (role göre)">
+          <label
+            className={`swatch-option auto${look.outfit ? '' : ' on'}`}
+            title={t('settings.outfitAutoTitle')}
+          >
             <input
               type="radio"
               name={`${id}-outfit`}
               checked={!look.outfit}
               onChange={() => setLook({ outfit: undefined })}
-              aria-label="Otomatik"
+              aria-label={t('settings.outfitAuto')}
             />
             <span style={{ ['--swatch' as string]: ROLE_COLOR[role] }}>A</span>
           </label>
@@ -145,14 +157,14 @@ function CharacterSettings() {
             <label
               key={c.color}
               className={`swatch-option${look.outfit === c.color ? ' on' : ''}`}
-              title={c.name}
+              title={t(c.name)}
             >
               <input
                 type="radio"
                 name={`${id}-outfit`}
                 checked={look.outfit === c.color}
                 onChange={() => setLook({ outfit: c.color })}
-                aria-label={c.name}
+                aria-label={t(c.name)}
               />
               <span style={{ ['--swatch' as string]: c.color }} />
             </label>
@@ -162,9 +174,9 @@ function CharacterSettings() {
       <Switch
         checked={look.accessories !== false}
         onChange={(v) => setLook({ accessories: v ? undefined : false })}
-        hint="Kravat, yelek, kulaklık, bere, gözlük gibi role özgü eşyalar."
+        hint={t('settings.accessoriesHint')}
       >
-        Rol aksesuarı
+        {t('settings.accessories')}
       </Switch>
     </fieldset>
   );
@@ -176,6 +188,7 @@ function MascotSettings() {
   const mascots = useOffice((s) => s.settings.mascots);
   const update = useOffice((s) => s.updateSettings);
   const id = useId();
+  const t = useT();
   if (view.kind !== 'project') return null;
   const current = mascots[view.project];
   const set = (kind: MascotKind | null) => {
@@ -185,16 +198,20 @@ function MascotSettings() {
     update({ mascots: next });
   };
   const options: { value: MascotKind | null; label: string }[] = [
-    { value: null, label: 'Yok' },
-    ...MASCOT_KINDS.map((k) => ({ value: k, label: MASCOT_LABEL[k] })),
+    { value: null, label: t('settings.mascotNone') },
+    ...MASCOT_KINDS.map((k) => ({ value: k, label: t(MASCOT_LABEL[k]) })),
   ];
   return (
     <fieldset className="settings-group">
-      <legend>Maskot</legend>
+      <legend>{t('settings.mascot')}</legend>
       <div className="setting-item">
-        <div className="segmented" role="radiogroup" aria-label={`${view.project} maskotu`}>
+        <div
+          className="segmented"
+          role="radiogroup"
+          aria-label={t('settings.mascotAria', { project: view.project })}
+        >
           {options.map((o) => (
-            <label key={o.label} className={(current ?? null) === o.value ? 'on' : ''}>
+            <label key={o.value ?? 'none'} className={(current ?? null) === o.value ? 'on' : ''}>
               <input
                 type="radio"
                 name={`${id}-mascot`}
@@ -205,7 +222,7 @@ function MascotSettings() {
             </label>
           ))}
         </div>
-        <p className="setting-hint">{view.project} ofisinde dolaşır, ara sıra oturup dinlenir.</p>
+        <p className="setting-hint">{t('settings.mascotHint', { project: view.project })}</p>
       </div>
     </fieldset>
   );
@@ -220,6 +237,7 @@ export function SettingsPanel() {
   const update = useOffice((s) => s.updateSettings);
   const panel = useRef<HTMLElement>(null);
   const titleId = useId();
+  const t = useT();
 
   // Açılınca ilk denetime odaklan; Esc ya da dışarı tıklama kapatır, odak düğmeye döner.
   useEffect(() => {
@@ -264,40 +282,65 @@ export function SettingsPanel() {
       aria-labelledby={titleId}
     >
       <header className="settings-head">
-        <h2 id={titleId}>Ayarlar</h2>
-        <button type="button" className="icon-btn" onClick={() => setOpen(false)} aria-label="Ayarları kapat">
+        <h2 id={titleId}>{t('settings.title')}</h2>
+        <button
+          type="button"
+          className="icon-btn"
+          onClick={() => setOpen(false)}
+          aria-label={t('settings.close')}
+        >
           ×
         </button>
       </header>
 
       <fieldset className="settings-group">
-        <legend>Görünüm</legend>
+        <legend>{t('settings.language')}</legend>
         <div className="setting-item">
-          <span className="setting-label">Tema</span>
-          <div className="theme-options" role="radiogroup" aria-label="Tema">
-            {THEMES.map((t) => (
-              <label key={t.id} className={`theme-option${settings.theme === t.id ? ' on' : ''}`}>
+          <div className="segmented" role="radiogroup" aria-label={t('settings.language')}>
+            {LANGS.map((l) => (
+              <label key={l} className={settings.language === l ? 'on' : ''} lang={l}>
                 <input
                   type="radio"
-                  name="theme"
-                  value={t.id}
-                  checked={settings.theme === t.id}
-                  onChange={() => update({ theme: t.id })}
+                  name="language"
+                  value={l}
+                  checked={settings.language === l}
+                  onChange={() => update({ language: l })}
                 />
-                <span className="swatch" aria-hidden="true">
-                  {t.swatch.map((c) => (
-                    <span key={c} style={{ background: c }} />
-                  ))}
-                </span>
-                {t.name}
+                {LANG_NAME[l]}
               </label>
             ))}
           </div>
-          <p className="setting-hint">{THEMES.find((t) => t.id === settings.theme)?.description}</p>
+        </div>
+      </fieldset>
+
+      <fieldset className="settings-group">
+        <legend>{t('settings.appearance')}</legend>
+        <div className="setting-item">
+          <span className="setting-label">{t('settings.theme')}</span>
+          <div className="theme-options" role="radiogroup" aria-label={t('settings.theme')}>
+            {THEMES.map((theme) => (
+              <label key={theme.id} className={`theme-option${settings.theme === theme.id ? ' on' : ''}`}>
+                <input
+                  type="radio"
+                  name="theme"
+                  value={theme.id}
+                  checked={settings.theme === theme.id}
+                  onChange={() => update({ theme: theme.id })}
+                />
+                <span className="swatch" aria-hidden="true">
+                  {theme.swatch.map((c) => (
+                    <span key={c} style={{ background: c }} />
+                  ))}
+                </span>
+                {t(`theme.${theme.id}.name`)}
+              </label>
+            ))}
+          </div>
+          <p className="setting-hint">{t(`theme.${settings.theme}.description`)}</p>
         </div>
         <div className="setting-item">
           <span className="setting-label" id={`${titleId}-brand`}>
-            Marka
+            {t('settings.brand')}
           </span>
           <div className="segmented" role="radiogroup" aria-labelledby={`${titleId}-brand`}>
             {BRAND_OPTIONS.map((o) => (
@@ -309,14 +352,14 @@ export function SettingsPanel() {
                   checked={settings.brand === o.value}
                   onChange={() => update({ brand: o.value })}
                 />
-                {o.label}
+                {typeof o.label === 'string' ? t(o.label) : o.label.text}
               </label>
             ))}
           </div>
         </div>
         <div className="setting-item">
           <span className="setting-label" id={`${titleId}-motion`}>
-            Hareket
+            {t('settings.motion')}
           </span>
           <div className="segmented" role="radiogroup" aria-labelledby={`${titleId}-motion`}>
             {MOTION_OPTIONS.map((o) => (
@@ -328,22 +371,22 @@ export function SettingsPanel() {
                   checked={settings.motion === o.value}
                   onChange={() => update({ motion: o.value })}
                 />
-                {o.label}
+                {t(o.label)}
               </label>
             ))}
           </div>
           <p className="setting-hint">
-            Azaltınca karakterler yürümek yerine solup yeniden belirir, süslü animasyonlar durur.
+            {t('settings.motionHint')}
             {settings.motion === 'system' &&
-              (systemReduced ? ' Bilgisayarında şu an azaltılmış.' : ' Bilgisayarında şu an tam.')}
+              (systemReduced ? t('settings.motionSystemReduced') : t('settings.motionSystemFull'))}
           </p>
         </div>
         <Switch
           checked={settings.lowPower}
           onChange={(v) => update({ lowPower: v })}
-          hint="Pil ve ısı için: daha az kare, parlama ve gölge kapalı, ekranlar yavaş."
+          hint={t('settings.lowPowerHint')}
         >
-          Düşük güç modu
+          {t('settings.lowPower')}
         </Switch>
       </fieldset>
 
@@ -351,46 +394,42 @@ export function SettingsPanel() {
       <MascotSettings />
 
       <fieldset className="settings-group">
-        <legend>Gizlilik</legend>
+        <legend>{t('settings.privacy')}</legend>
         <Switch
           checked={settings.hideFiles}
           onChange={(v) => update({ hideFiles: v })}
-          hint="Ekran paylaşırken işe yarar: yalnızca işlem türü görünür, ör. “Edit”."
+          hint={t('settings.hideFilesHint')}
         >
-          Dosya adlarını gizle
+          {t('settings.hideFiles')}
         </Switch>
         <Switch
           checked={settings.showTitles}
           onChange={(v) => update({ showTitles: v })}
-          hint="Claude'un her oturuma verdiği kısa özet başlık. Kapatınca yalnızca oturum adı görünür."
+          hint={t('settings.showTitlesHint')}
         >
-          Oturum başlıklarını göster
+          {t('settings.showTitles')}
         </Switch>
       </fieldset>
 
       <fieldset className="settings-group">
-        <legend>Liste ve ofis</legend>
+        <legend>{t('settings.listOffice')}</legend>
         <Switch
           checked={settings.hideOffline}
           onChange={(v) => update({ hideOffline: v })}
-          hint="Kapalı oturumlar, işini bitiren yardımcılar ve masada olmayan ekip üyeleri gösterilmez."
+          hint={t('settings.hideOfflineHint')}
         >
-          Kapalıları gizle
+          {t('list.hideOffline')}
         </Switch>
       </fieldset>
 
       <fieldset className="settings-group">
-        <legend>Ses</legend>
-        <Switch
-          checked={settings.sound}
-          onChange={setSound}
-          hint="Biri seni beklediğinde, yardımcı işini bitirdiğinde ve oturumlar arası mesaj geldiğinde kısa bir ses."
-        >
-          Sesli uyarılar
+        <legend>{t('settings.sound')}</legend>
+        <Switch checked={settings.sound} onChange={setSound} hint={t('settings.soundHint')}>
+          {t('settings.soundAlerts')}
         </Switch>
         <div className={`setting-item volume${settings.sound ? '' : ' disabled'}`}>
           <label className="setting-label" htmlFor={`${titleId}-volume`}>
-            Ses düzeyi
+            {t('settings.volume')}
           </label>
           <input
             id={`${titleId}-volume`}
@@ -401,14 +440,14 @@ export function SettingsPanel() {
             value={Math.round(settings.volume * 100)}
             disabled={!settings.sound}
             onChange={(e) => update({ volume: Number(e.target.value) / 100 })}
-            aria-valuetext={`yüzde ${Math.round(settings.volume * 100)}`}
+            aria-valuetext={t('settings.volumeText', { n: Math.round(settings.volume * 100) })}
           />
           <span className="volume-value" aria-hidden="true">
             {Math.round(settings.volume * 100)}
           </span>
         </div>
-        <div className="cue-tests" role="group" aria-label="Sesleri dene">
-          <span className="setting-label">Dene</span>
+        <div className="cue-tests" role="group" aria-label={t('settings.tryAria')}>
+          <span className="setting-label">{t('settings.try')}</span>
           {CUES.map((c) => (
             <button
               key={c}
@@ -419,9 +458,9 @@ export function SettingsPanel() {
                 sounds.unlock();
                 sounds.play(c, settings.volume, true);
               }}
-              title={CUE_LABEL[c]}
+              title={t(CUE_LABEL[c])}
             >
-              {CUE_SHORT[c]}
+              {t(CUE_SHORT[c])}
             </button>
           ))}
         </div>

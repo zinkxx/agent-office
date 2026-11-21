@@ -74,6 +74,8 @@ Hiçbir veri bilgisayarından dışarı çıkmaz; mesaj, kod ve komut içerikler
 
 ## Özellikler
 
+- **Dil:** Türkçe ve İngilizce arayüz (3B ofisteki tabela ve ekranlar dahil). Varsayılan tarayıcı diline göre
+  seçilir; Ayarlar'dan istediğin an değiştirebilirsin.
 - **Marka ayarı:** varsayılan olarak sade ve nötr; Ayarlar'dan DevTechnic markası (duvar, logo, plaket) seçilebilir.
 
 ### 🏢 DevTechnic ofisi (Sürüm 3)

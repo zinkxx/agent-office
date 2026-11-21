@@ -24,7 +24,8 @@
 
 </div>
 
-> The user interface is in Turkish. A Turkish version of this document is available: [README.tr.md](README.tr.md).
+> The user interface is available in Turkish and English (switch in Settings; the default follows your browser
+> language). A Turkish version of this document is available: [README.tr.md](README.tr.md).
 
 ## Quick start
 
@@ -67,6 +68,8 @@ No data ever leaves your computer, and message, code and command contents are ne
 
 ## Features
 
+- **Language:** Turkish and English user interface, including the signs and screens in the 3D office. The default
+  follows your browser language; switch any time in Settings.
 - **Brand setting:** plain and neutral by default; pick the DevTechnic brand (wall, logo, plaque) in Settings.
 - **DevTechnic office (v3):** a brand wall with a backlit gold DevTechnic logo, the office as one floor of a tower
   (navy floor slab, lit lower floors, city below), acoustic panels and a conference phone in the meeting room, tiles

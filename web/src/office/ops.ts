@@ -1,4 +1,5 @@
 import type { Agent, AgentRole, AgentStatus, TeamMember } from '../../../shared/types.ts';
+import type { MessageKey } from '../i18n.ts';
 
 /**
  * Teknoloji eşyalarının (sunucu ışıkları, duvar panosu, derleme lambası, kanban, giriş ekranı) canlı veriden
@@ -30,11 +31,12 @@ export const BUILD_COLOR: Record<BuildState, string> = {
   quiet: '#3fe07f',
 };
 
-export const BUILD_TEXT: Record<BuildState, string> = {
-  error: 'Hata var',
-  asking: 'Seni bekliyor',
-  busy: 'Her şey yolunda',
-  quiet: 'Sakin',
+/** Panodaki durum yazısının sözlük anahtarı ("Her şey yolunda" / "All good"). */
+export const BUILD_TEXT: Record<BuildState, MessageKey> = {
+  error: 'build.error',
+  asking: 'build.asking',
+  busy: 'build.busy',
+  quiet: 'build.quiet',
 };
 
 export interface OpsStats {

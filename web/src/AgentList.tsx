@@ -1,19 +1,20 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Agent, AgentRole, TeamMember } from '../../shared/types.ts';
+import type { Lang } from './i18n.ts';
 import {
   ROLE_COLOR,
-  ROLE_LABEL,
   STATUS_COLOR,
-  STATUS_LABEL,
   activityText,
   agoText,
   entrypointLabel,
   groupByProject,
   isActive,
+  roleLabel,
+  statusLabel,
 } from './labels.ts';
 import { memberFor, memberNameMap } from './office/sim/plan.ts';
 import { visibleAgents } from './settings.ts';
-import { useCurrentView, useOffice } from './store.ts';
+import { useCurrentView, useLang, useOffice, useT } from './store.ts';
 
 /** Sunucu saatine göre "şimdi"; 15 sn'de bir ilerler ("3 dk önce" yazıları için). */
 export function useServerNow(stepMs = 15_000): number {
@@ -27,9 +28,9 @@ export function useServerNow(stepMs = 15_000): number {
 }
 
 /** Yardımcı ajan işini bitirdiyse ofisten ayrılmıştır; listede bunu söyler. */
-export function statusText(agent: Agent): string {
-  if (agent.kind === 'subagent' && agent.status === 'idle') return 'işini bitirdi';
-  return STATUS_LABEL[agent.status];
+export function statusText(agent: Agent, lang: Lang): string {
+  if (agent.kind === 'subagent' && agent.status === 'idle') return statusLabel('finished', lang);
+  return statusLabel(agent.status, lang);
 }
 
 function AgentRow({ agent, now, child = false }: { agent: Agent; now: number; child?: boolean }) {
@@ -37,6 +38,7 @@ function AgentRow({ agent, now, child = false }: { agent: Agent; now: number; ch
   const select = useOffice((s) => s.select);
   const hideFiles = useOffice((s) => s.settings.hideFiles);
   const showTitles = useOffice((s) => s.settings.showTitles);
+  const lang = useLang();
   const activity = activityText(agent.current, hideFiles);
   const entry = entrypointLabel(agent.entrypoint);
   const active = isActive(agent.status);
@@ -64,15 +66,15 @@ function AgentRow({ agent, now, child = false }: { agent: Agent; now: number; ch
           </span>
           <span className="agent-sub">
             <span className="status" style={{ color: active ? STATUS_COLOR[agent.status] : undefined }}>
-              {statusText(agent)}
+              {statusText(agent, lang)}
             </span>
             {activity && <span className="activity"> · {activity}</span>}
-            {!active && <span className="ago"> · {agoText(agent.lastActivityAt, now)}</span>}
+            {!active && <span className="ago"> · {agoText(agent.lastActivityAt, now, lang)}</span>}
           </span>
         </span>
         <span className="row-badges">
           <span className="role-chip" style={{ ['--role-color' as string]: ROLE_COLOR[agent.role] }}>
-            {ROLE_LABEL[agent.role]}
+            {roleLabel(agent.role, lang)}
           </span>
           {entry && <span className={`badge ${agent.entrypoint === 'cli' ? 'cli' : 'vscode'}`}>{entry}</span>}
         </span>
@@ -82,17 +84,19 @@ function AgentRow({ agent, now, child = false }: { agent: Agent; now: number; ch
 }
 
 function AbsentRow({ member }: { member: TeamMember }) {
+  const t = useT();
+  const lang = useLang();
   return (
     <li>
-      <div className="agent-row absent" title="Ekipte tanımlı, şu an çalışmıyor">
+      <div className="agent-row absent" title={t('list.absentTitle')}>
         <span className="dot hollow" />
         <span className="agent-main">
           <span className="agent-name">{member.name}</span>
-          <span className="agent-sub">boşta</span>
+          <span className="agent-sub">{statusLabel('idle', lang)}</span>
         </span>
         <span className="row-badges">
           <span className="role-chip" style={{ ['--role-color' as string]: ROLE_COLOR[member.role] }}>
-            {ROLE_LABEL[member.role]}
+            {roleLabel(member.role, lang)}
           </span>
         </span>
       </div>
@@ -118,6 +122,7 @@ const ROLES: AgentRole[] = [
 export function ListFilters() {
   const hideOffline = useOffice((s) => s.settings.hideOffline);
   const update = useOffice((s) => s.updateSettings);
+  const t = useT();
   return (
     <div className="list-filters">
       <RoleFilters />
@@ -129,7 +134,7 @@ export function ListFilters() {
           onChange={() => update({ hideOffline: !hideOffline })}
         />
         <span className="switch" aria-hidden="true" />
-        Kapalıları gizle
+        {t('list.hideOffline')}
       </label>
     </div>
   );
@@ -141,6 +146,8 @@ function RoleFilters() {
   const toggle = useOffice((s) => s.toggleRole);
   const clear = useOffice((s) => s.clearRoles);
   const view = useCurrentView();
+  const t = useT();
+  const lang = useLang();
   const present = useMemo(() => {
     const set = new Set<AgentRole>();
     for (const a of snapshot?.agents ?? [])
@@ -152,14 +159,14 @@ function RoleFilters() {
   }, [snapshot, view, filter]);
   if (present.length < 2) return null;
   return (
-    <div className="role-filters" role="group" aria-label="Rol filtresi">
+    <div className="role-filters" role="group" aria-label={t('list.roleFilter')}>
       <button
         type="button"
         className={`chip${filter.length === 0 ? ' on' : ''}`}
         onClick={clear}
         aria-pressed={filter.length === 0}
       >
-        Hepsi
+        {t('list.all')}
       </button>
       {present.map((r) => (
         <button
@@ -171,7 +178,7 @@ function RoleFilters() {
           aria-pressed={filter.includes(r)}
         >
           <span className="chip-dot" aria-hidden="true" />
-          {ROLE_LABEL[r]}
+          {roleLabel(r, lang)}
         </button>
       ))}
     </div>
@@ -184,6 +191,7 @@ export function AgentList() {
   const filter = useOffice((s) => s.roleFilter);
   const view = useCurrentView();
   const now = useServerNow();
+  const t = useT();
   const groups = useMemo(() => {
     const roleOk = (r: AgentRole) => filter.length === 0 || filter.includes(r);
     const inView = (snapshot?.agents ?? []).filter(
@@ -218,11 +226,7 @@ export function AgentList() {
     <div className="agent-list">
       {snapshot && groups.length === 0 && (
         <p className="empty">
-          {filter.length > 0
-            ? 'Bu rollerde çalışan yok. Filtreyi "Hepsi" yaparak herkesi görebilirsin.'
-            : allHidden
-              ? 'Açık oturum yok. Kapalı olanları görmek için "Kapalıları gizle"yi kapat.'
-              : 'Şu an açık bir Claude oturumu yok. Bir oturum başlattığında burada belirecek.'}
+          {filter.length > 0 ? t('list.emptyFiltered') : allHidden ? t('list.emptyHidden') : t('list.empty')}
         </p>
       )}
       {groups.map((g) => {
@@ -232,8 +236,9 @@ export function AgentList() {
             <h2>
               {g.project}
               <span className="count">
-                {count} ajan{g.absent.length > 0 ? ` · ${g.absent.length} üye boşta` : ''}
-                {g.hidden > 0 ? ` · ${g.hidden} gizli` : ''}
+                {t('list.agents', { n: count })}
+                {g.absent.length > 0 ? ` · ${t('list.idleMembers', { n: g.absent.length })}` : ''}
+                {g.hidden > 0 ? ` · ${t('list.hidden', { n: g.hidden })}` : ''}
               </span>
             </h2>
             <ul>

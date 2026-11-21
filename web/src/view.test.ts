@@ -40,10 +40,12 @@ describe('görünüm seçimi', () => {
   });
 
   it('çalışma süresi', () => {
-    expect(durationText(40_000)).toBe('40 sn');
-    expect(durationText(8 * 60_000)).toBe('8 dk');
-    expect(durationText(72 * 60_000)).toBe('1 sa 12 dk');
-    expect(durationText(120 * 60_000)).toBe('2 sa');
+    expect(durationText(40_000, 'tr')).toBe('40 sn');
+    expect(durationText(8 * 60_000, 'tr')).toBe('8 dk');
+    expect(durationText(72 * 60_000, 'tr')).toBe('1 sa 12 dk');
+    expect(durationText(120 * 60_000, 'tr')).toBe('2 sa');
+    expect(durationText(40_000, 'en')).toBe('40 s');
+    expect(durationText(72 * 60_000, 'en')).toBe('1 h 12 min');
   });
 });
 

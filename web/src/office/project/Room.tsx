@@ -7,6 +7,7 @@ import type { OfficePlan } from '../sim/plan.ts';
 import type { OfficeTheme } from '../themes.ts';
 import type { OfficeSim } from '../sim/sim.ts';
 import type { BrandId } from '../brand.ts';
+import type { Lang } from '../../i18n.ts';
 import {
   BRAND,
   brandIconTexture,
@@ -264,10 +265,12 @@ export function BrandSurfaces({
   layout,
   theme,
   brand,
+  lang,
 }: {
   layout: FurnitureLayout;
   theme: OfficeTheme;
   brand: BrandId;
+  lang: Lang;
 }) {
   const b = layout.brand;
   const night = theme.night;
@@ -275,11 +278,11 @@ export function BrandSurfaces({
   return (
     <group>
       <DecalMesh d={b.logo} map={brandLogoTexture(brand)} glow={night ? 1.75 : 1.05} />
-      <DecalMesh d={b.word} map={brandWordTexture('#e2e8f0', brand)} glow={night ? 1.15 : 0.95} />
-      <DecalMesh d={b.plaque} map={brandPlaqueTexture(brand)} glow={night ? 1.05 : 0.95} />
+      <DecalMesh d={b.word} map={brandWordTexture('#e2e8f0', brand, lang)} glow={night ? 1.15 : 0.95} />
+      <DecalMesh d={b.plaque} map={brandPlaqueTexture(brand, lang)} glow={night ? 1.05 : 0.95} />
       <DecalMesh d={b.neon} map={brandIconTexture(brand)} glow={night ? 2.4 : 1.2} />
       <DecalMesh d={b.totem} map={brandIconTexture(brand)} glow={night ? 1.8 : 1.1} />
-      <DecalMesh d={b.mat} map={entranceMatTexture(brand)} lit floor />
+      <DecalMesh d={b.mat} map={entranceMatTexture(brand, lang)} lit floor />
       <DecalMesh d={tiles} map={tileTexture()} lit repeat={[tiles.w / 0.6, tiles.h / 0.3]} />
     </group>
   );

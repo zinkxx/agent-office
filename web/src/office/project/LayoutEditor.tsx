@@ -122,14 +122,7 @@ export function LayoutEditor({ plan }: { plan: OfficePlan }) {
     const moved = island && (island.x !== drag.x || island.z !== drag.z);
     if (moved) {
       const result = useOffice.getState().layoutEditor?.move(drag.id, drag.x, drag.z);
-      useOffice.setState({
-        editNote:
-          result === 'ok'
-            ? 'Ada taşındı.'
-            : result === 'path'
-              ? 'Buraya konamaz: kapıdan bazı masalara yol kapanıyor.'
-              : 'Buraya konamaz: odanın dışında ya da başka bir adaya çok yakın.',
-      });
+      useOffice.setState({ editNote: result ?? 'blocked' });
     }
     setDrag(null);
   };

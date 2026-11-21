@@ -1,5 +1,6 @@
 import type { AgentRole, OfficeSnapshot } from '../../shared/types.ts';
-import { ROLE_LABEL, toolName } from './labels.ts';
+import type { Lang } from './i18n.ts';
+import { roleLabel, toolName } from './labels.ts';
 
 /** Ekran köşesindeki canlı akışın bir satırı. Yalnızca rol, araç adı ve (varsa) dosya adı. */
 export interface FeedItem {
@@ -52,8 +53,8 @@ export function appendFeed(feed: readonly FeedItem[], items: readonly FeedItem[]
 }
 
 /** "Tasarımcı · Edit · theme.dart"; dosya adları gizliyse "Tasarımcı · Edit". */
-export function feedText(item: FeedItem, hideFiles: boolean): string {
-  const parts = [ROLE_LABEL[item.role], toolName(item.tool)];
+export function feedText(item: FeedItem, hideFiles: boolean, lang: Lang): string {
+  const parts = [roleLabel(item.role, lang), toolName(item.tool)];
   if (item.file && !hideFiles) parts.push(item.file);
   return parts.join(' · ');
 }

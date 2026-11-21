@@ -3,36 +3,30 @@ import { AgentList, ListFilters, statusText, useServerNow } from './AgentList.ts
 import { feedText } from './feed.ts';
 import {
   ROLE_COLOR,
-  ROLE_LABEL,
   STATUS_COLOR,
   activityText,
   agoText,
   durationText,
   entrypointLabel,
   isActive,
+  roleLabel,
 } from './labels.ts';
 import { Office } from './office/Office.tsx';
 import { visibleAgents } from './settings.ts';
 import { EditLayoutButton, LayoutBar } from './LayoutBar.tsx';
 import { SettingsButton, SettingsPanel } from './SettingsPanel.tsx';
 import { brandTexts } from './office/brand.ts';
-import { STATIC_DEMO, useBrand, useCurrentView, useOffice, useTheme } from './store.ts';
+import { STATIC_DEMO, useBrand, useCurrentView, useLang, useOffice, useT, useTheme } from './store.ts';
 import { ALL_PROJECTS, projectsOf, viewKey } from './view.ts';
 
 function ConnectionBadge() {
   const connection = useOffice((s) => s.connection);
   const retryInMs = useOffice((s) => s.retryInMs);
+  const t = useT();
   if (connection === 'open') {
     return (
-      <span
-        className="conn open"
-        title={
-          STATIC_DEMO
-            ? 'Tarayıcıda çalışan demo (sunucu yok, uydurma veriler)'
-            : 'Yerel sunucuya bağlı (127.0.0.1)'
-        }
-      >
-        <span className="conn-dot" /> <span className="conn-text">canlı</span>
+      <span className="conn open" title={STATIC_DEMO ? t('conn.demoTitle') : t('conn.localTitle')}>
+        <span className="conn-dot" /> <span className="conn-text">{t('conn.live')}</span>
       </span>
     );
   }
@@ -40,8 +34,8 @@ function ConnectionBadge() {
     <span className="conn waiting" role="status">
       <span className="conn-dot" />
       {connection === 'connecting'
-        ? 'bağlanıyor…'
-        : `bağlantı yok · ${Math.round((retryInMs ?? 1000) / 1000)} sn içinde yeniden deneniyor`}
+        ? t('conn.connecting')
+        : t('conn.retry', { s: Math.round((retryInMs ?? 1000) / 1000) })}
     </span>
   );
 }
@@ -53,11 +47,12 @@ function ProjectPicker() {
   const view = useCurrentView();
   const projects = useMemo(() => projectsOf(snapshot), [snapshot]);
   const current = viewKey(view);
+  const t = useT();
   return (
     <label className="picker">
-      <span className="picker-label">Proje</span>
-      <select value={current} onChange={(e) => setView(e.target.value)} aria-label="Gösterilecek proje">
-        <option value={ALL_PROJECTS}>Tüm projeler</option>
+      <span className="picker-label">{t('picker.project')}</span>
+      <select value={current} onChange={(e) => setView(e.target.value)} aria-label={t('picker.projectAria')}>
+        <option value={ALL_PROJECTS}>{t('picker.all')}</option>
         {projects.map((p) => (
           <option key={p} value={p}>
             {p}
@@ -75,6 +70,7 @@ function Summary() {
   const agents = useOffice((s) => s.snapshot?.agents);
   const hideOffline = useOffice((s) => s.settings.hideOffline);
   const view = useCurrentView();
+  const t = useT();
   if (!agents) return null;
   const inView = visibleAgents(
     view.kind === 'all' ? agents : agents.filter((a) => a.project === view.project),
@@ -85,7 +81,8 @@ function Summary() {
   const helpers = inView.filter((a) => a.kind === 'subagent' && isActive(a.status)).length;
   return (
     <span className="summary">
-      {sessions.length} oturum · {working} çalışıyor{helpers > 0 ? ` · ${helpers} yardımcı` : ''}
+      {t('summary.sessions', { n: sessions.length })} · {t('summary.working', { n: working })}
+      {helpers > 0 ? ` · ${t('summary.helpers', { n: helpers })}` : ''}
     </span>
   );
 }
@@ -102,21 +99,23 @@ function DetailPanel() {
   const showTitles = useOffice((s) => s.settings.showTitles);
   const select = useOffice((s) => s.select);
   const now = useServerNow(5_000);
+  const t = useT();
+  const lang = useLang();
   if (!selectedId || !agent) return null;
   const current = activityText(agent.current, hideFiles);
   const entry = entrypointLabel(agent.entrypoint);
   const active = isActive(agent.status);
   return (
-    <section className="detail glass" aria-label="Ajan ayrıntıları">
+    <section className="detail glass" aria-label={t('detail.aria')}>
       <header className="detail-head">
         <span className="role-chip big" style={{ ['--role-color' as string]: ROLE_COLOR[agent.role] }}>
-          {ROLE_LABEL[agent.role]}
+          {roleLabel(agent.role, lang)}
         </span>
         <button
           type="button"
           className="icon-btn"
           onClick={() => select(null)}
-          aria-label="Ayrıntıları kapat"
+          aria-label={t('detail.close')}
         >
           ×
         </button>
@@ -124,49 +123,49 @@ function DetailPanel() {
       <h2 className="detail-name">{agent.name}</h2>
       {showTitles && agent.title && <p className="detail-title">{agent.title}</p>}
       <dl className="detail-grid">
-        <dt>Durum</dt>
+        <dt>{t('detail.status')}</dt>
         <dd>
           <span
             className={`dot${active ? ' pulse' : ''}`}
             style={{ background: STATUS_COLOR[agent.status], color: STATUS_COLOR[agent.status] }}
           />
-          {statusText(agent)}
+          {statusText(agent, lang)}
         </dd>
-        <dt>Şu an</dt>
+        <dt>{t('detail.now')}</dt>
         <dd className="mono">{current ?? '—'}</dd>
-        <dt>Proje</dt>
+        <dt>{t('detail.project')}</dt>
         <dd>{agent.project}</dd>
         {entry && (
           <>
-            <dt>Nerede</dt>
+            <dt>{t('detail.where')}</dt>
             <dd>{entry}</dd>
           </>
         )}
         {parent && (
           <>
-            <dt>Lideri</dt>
+            <dt>{t('detail.lead')}</dt>
             <dd>{parent.name}</dd>
           </>
         )}
         {agent.agentType && (
           <>
-            <dt>Tür</dt>
+            <dt>{t('detail.type')}</dt>
             <dd>{agent.agentType}</dd>
           </>
         )}
-        <dt>Çalışma süresi</dt>
-        <dd>{agent.startedAt ? durationText(now - agent.startedAt) : '—'}</dd>
+        <dt>{t('detail.uptime')}</dt>
+        <dd>{agent.startedAt ? durationText(now - agent.startedAt, lang) : '—'}</dd>
       </dl>
       {agent.recent.length > 0 && (
         <>
           <h3 className="detail-sub">
-            Son işlemler <span className="count">{Math.min(20, agent.recent.length)}</span>
+            {t('detail.recent')} <span className="count">{Math.min(20, agent.recent.length)}</span>
           </h3>
           <ol className="recent">
             {agent.recent.slice(0, 20).map((r, i) => (
               <li key={`${r.at}-${i}`}>
                 <span className="mono">{activityText(r, hideFiles)}</span>
-                <span className="ago">{agoText(r.at, now)}</span>
+                <span className="ago">{agoText(r.at, now, lang)}</span>
               </li>
             ))}
           </ol>
@@ -184,6 +183,8 @@ function Feed() {
   const select = useOffice((s) => s.select);
   const editing = useOffice((s) => s.editingLayout);
   const view = useCurrentView();
+  const t = useT();
+  const lang = useLang();
   const items = useMemo(() => {
     if (view.kind === 'all') return feed;
     const ids = new Set((agents ?? []).filter((a) => a.project === view.project).map((a) => a.id));
@@ -192,12 +193,12 @@ function Feed() {
   // Düzenleme çubuğu ekranın altını kullanır; akış o sırada gizlenir.
   if (items.length === 0 || editing) return null;
   return (
-    <ol className="feed" aria-label="Canlı işlem akışı" aria-live="off">
+    <ol className="feed" aria-label={t('feed.aria')} aria-live="off">
       {items.map((f, i) => (
         <li key={f.key} style={{ opacity: 0.65 + (0.35 * (i + 1)) / items.length }}>
           <button type="button" onClick={() => select(f.agentId)} title={f.name}>
             <span className="feed-dot" style={{ background: ROLE_COLOR[f.role] }} aria-hidden="true" />
-            {feedText(f, hideFiles)}
+            {feedText(f, hideFiles, lang)}
           </button>
         </li>
       ))}
@@ -212,8 +213,10 @@ export function App() {
   const connected = useOffice((s) => s.connection === 'open');
   const hasData = useOffice((s) => s.snapshot !== null);
   const reduced = useOffice((s) => s.reducedMotion);
-  const themeName = useTheme().name;
-  const brandInfo = brandTexts(useBrand());
+  const t = useT();
+  const lang = useLang();
+  const themeName = t(`theme.${useTheme().id}.name`);
+  const brandInfo = brandTexts(useBrand(), lang);
 
   return (
     <div className={`app${panelOpen ? ' panel-open' : ''}${reduced ? ' reduce-motion' : ''}`}>
@@ -223,12 +226,14 @@ export function App() {
           <div className="stage-overlay">
             <div className="loader" />
             {STATIC_DEMO ? (
-              <p>Demo ofis hazırlanıyor…</p>
+              <p>{t('loading.demo')}</p>
             ) : (
               <>
-                <p>Yerel sunucu bekleniyor…</p>
+                <p>{t('loading.server')}</p>
                 <p className="hint">
-                  Sunucu kapalıysa proje klasöründe <code>npm start</code> çalıştır.
+                  {t('loading.hintBefore')}
+                  <code>npm start</code>
+                  {t('loading.hintAfter')}
                 </p>
               </>
             )}
@@ -241,7 +246,7 @@ export function App() {
           {brandInfo.icon && (
             <img className="brand-icon" src={brandInfo.icon} alt="" width="22" height="22" />
           )}
-          Ajan Ofisi {brandInfo.suffix && <span className="brand-name">{brandInfo.suffix}</span>}
+          {t('app.name')} {brandInfo.suffix && <span className="brand-name">{brandInfo.suffix}</span>}
           <span className="theme-name">{themeName}</span>
         </h1>
         {STATIC_DEMO && (
@@ -250,9 +255,9 @@ export function App() {
             href="https://github.com/zinkxx/agent-office"
             target="_blank"
             rel="noreferrer"
-            title="GitHub deposunu aç"
+            title={t('top.demoBadgeTitle')}
           >
-            Canlı demo · uydurma veriler
+            {t('top.demoBadge')}
           </a>
         )}
         <ConnectionBadge />
@@ -263,8 +268,8 @@ export function App() {
           type="button"
           className="ghost with-icon"
           onClick={() => select(null)}
-          title="Kamerayı tüm ofise döndür"
-          aria-label="Tüm ofis"
+          title={t('top.wholeOfficeTitle')}
+          aria-label={t('top.wholeOffice')}
         >
           <svg
             width="16"
@@ -279,7 +284,7 @@ export function App() {
           >
             <path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4" />
           </svg>
-          <span className="label-text">Tüm ofis</span>
+          <span className="label-text">{t('top.wholeOffice')}</span>
         </button>
         <EditLayoutButton />
         <SettingsButton />
@@ -289,7 +294,7 @@ export function App() {
           onClick={togglePanel}
           aria-expanded={panelOpen}
           aria-controls="side-panel"
-          aria-label={panelOpen ? 'Paneli gizle' : 'Ajanlar'}
+          aria-label={panelOpen ? t('top.hidePanel') : t('top.agents')}
         >
           <svg
             width="16"
@@ -304,7 +309,7 @@ export function App() {
             <rect x="3.5" y="4" width="17" height="16" rx="2" />
             <path d="M14.5 4v16" />
           </svg>
-          <span className="label-text">{panelOpen ? 'Paneli gizle' : 'Ajanlar'}</span>
+          <span className="label-text">{panelOpen ? t('top.hidePanel') : t('top.agents')}</span>
         </button>
       </header>
 
