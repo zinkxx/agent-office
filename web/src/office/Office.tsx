@@ -6,6 +6,7 @@ import { ACESFilmicToneMapping, PCFShadowMap } from 'three';
 import { visibleAgents } from '../settings.ts';
 import { useCurrentView, useOffice, useTheme } from '../store.ts';
 import { AllProjectsScene } from './AllProjectsScene.tsx';
+import { registerCapture } from './capture.ts';
 import { LabelHost, labelLayer } from './Label.tsx';
 import { clockOrigin, clockSeconds, frameInterval, frameStep } from './power.ts';
 import { ProjectScene } from './project/ProjectScene.tsx';
@@ -45,6 +46,29 @@ function FrameDriver({ lowPower }: { lowPower: boolean }) {
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
   }, [advance, clock]);
+  return null;
+}
+
+/**
+ * "Görüntü kaydet" köprüsü: yakalama fonksiyonunu capture.ts'ye kaydeder. preserveDrawingBuffer kapalı
+ * olduğu için tuval içeriği çizimden sonra silinebilir; bu yüzden yakalarken sahne aynı görevde yeniden
+ * çizilir ve hemen ardından `toDataURL` okunur. Çizim `advance` ile yapılır (zaman ilerletilmeden, delta 0):
+ * parlama katmanı açıksa çizimi EffectComposer üstlendiğinden düz `gl.render(scene, camera)` renk tonlaması
+ * ve parlama olmadan farklı görünürdü; katman yokken `advance` zaten `gl.render(scene, camera)` çağırır.
+ * Etiketler HTML katmanında olduğundan görüntüye girmez.
+ */
+function CaptureBridge() {
+  const gl = useThree((s) => s.gl);
+  const advance = useThree((s) => s.advance);
+  const clock = useThree((s) => s.clock);
+  useEffect(
+    () =>
+      registerCapture(() => {
+        advance(clock.elapsedTime);
+        return gl.domElement.toDataURL('image/png');
+      }),
+    [gl, advance, clock],
+  );
   return null;
 }
 
@@ -144,6 +168,7 @@ export function Office() {
         }}
       >
         <FrameDriver lowPower={lowPower} />
+        <CaptureBridge />
         <Scenes />
         {lowPower ? <RendererToneMapping /> : <Effects />}
       </Canvas>
