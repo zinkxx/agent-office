@@ -1,0 +1,47 @@
+name: Bug report
+description: Something in the office looks or behaves wrong.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Türkçe yazabilirsiniz.
+
+        **Privacy:** please do not paste real session logs, message contents, file paths, account IDs or e-mail
+        addresses. Describe what you saw instead, or reproduce it with `npm run demo` (made-up data).
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you see, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Run `npm run demo`
+        2. Open the project office
+        3. …
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Where does it happen?
+      options:
+        - Local (`npm start`, my own sessions)
+        - Local demo (`npm run demo`)
+        - Live demo (GitHub Pages)
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      description: Operating system, browser and Node.js version.
+      placeholder: macOS 15, Chrome 140, Node 22.12
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshot or console output
+      description: Optional. Check that it shows no private names or paths.

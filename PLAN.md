@@ -639,3 +639,11 @@ güneş paneli, çatı bahçesi, helikopter pisti), park, otopark; uzak halkada 
 
 - 20.11.2026: Statik demo kipi (VITE_STATIC_DEMO=1): arayüz WebSocket yerine tarayıcıda OfficeStore + startDemo (kalabalık) çalıştırır; anlık görüntüler `applySnapshot` ile aynı yoldan geçer (web/src/staticDemo.ts). Başlıkta "Canlı demo · uydurma veriler" rozeti. web tsconfig `types`a "node" eklendi (yalnızca tip kontrolü için).
 - `.github/workflows/pages.yml` + `npm run build:demo` (taban /agent-office/): main gönderiminde GitHub Pages yayını. Yerelde doğrulandı. Kullanıcı: Settings → Pages → Source: GitHub Actions.
+- **20.11.2026:** GitHub vitrini (kullanıcı istedi, tarayıcıda kullanıcı girişiyle): Pages kaynağı GitHub Actions,
+  canlı demo yayında (https://zinkxx.github.io/agent-office/); depo açıklaması, web sitesi ve konu etiketleri;
+  sosyal önizleme görseli; proje profilde sabitlendi, profil README'sine "New: Agent Office" bölümü ve tablo satırı
+  eklendi (zinkxx/zinkxx). İlk sürüm v1.0.0 yayınlandı (etiket + sürüm notu, demo GIF'iyle).
+- **21.11.2026:** GitHub vitrini 2 (kullanıcı istedi): `.github/ISSUE_TEMPLATE/` (hata bildirimi, özellik fikri, canlı
+  demo bağlantısı; gizlilik uyarılı, İngilizce, Türkçe yazılabilir). README'lerde sabit test rozeti yerine canlı CI
+  rozeti, sürüm ve issue rozetleri (TR/EN test sayıları birbirini tutmuyordu). Başlangıç issue'ları, ek etiketler ve
+  herkese açık "Agent Office Roadmap" proje panosu GitHub'da açıldı.

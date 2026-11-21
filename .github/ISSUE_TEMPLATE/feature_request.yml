@@ -1,0 +1,30 @@
+name: Feature idea
+description: Suggest something new for the office.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ideas are welcome! Türkçe yazabilirsiniz.
+
+        Agent Office is **100% local**: it only reads `~/.claude`, never writes there, and never sends data off the
+        machine. Ideas that need a network service or show message contents are out of scope.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like to see?
+      description: Describe the idea and the problem it solves.
+    validations:
+      required: true
+  - type: textarea
+    id: how
+    attributes:
+      label: How could it look or work?
+      description: Optional. A sketch, a reference or a short description.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy
+      options:
+        - label: This idea keeps everything on my machine and shows no message contents or full paths.
+          required: true

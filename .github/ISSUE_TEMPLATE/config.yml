@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Try the live demo
+    url: https://zinkxx.github.io/agent-office/
+    about: See the office in your browser with made-up data before opening an issue.
