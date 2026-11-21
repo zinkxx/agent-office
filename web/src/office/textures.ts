@@ -360,17 +360,19 @@ function brandTexture(
 
 const ICON_URL = '/brand/devtechnic-icon.svg';
 
-/** Marka duvarındaki logo: saydam zeminde altın logo (sade markada simge + yazı). 2:1. */
+/**
+ * Marka duvarındaki logo: saydam zeminde altın logo (sade markada yalnızca simge; marka yazısı altındaki ayrı
+ * şeritte, bkz. `brandWordTexture`). 2:1.
+ */
 export function brandLogoTexture(brand: BrandId = 'sade'): Texture {
   return brandTexture(brand, 'brand-logo', 1024, 512, '/brand/devtechnic-logo.svg', (g, img) => {
     if (brand === 'devtechnic') {
       if (img) g.drawImage(img, 0, 0, 1024, 512);
       return;
     }
-    paintSimpleIcon(g, 352, 70, 320);
-    g.fillStyle = '#ffffff';
-    g.font = `600 84px ${BRAND_FONT}`;
-    spacedText(g, brandTexts(brand).word, 512, 440, 18);
+    // yatayda ortalı; üst boşluk, simge ile alttaki yazı şeridi arasındaki boşlukla yaklaşık eşit
+    const size = 360;
+    paintSimpleIcon(g, (1024 - size) / 2, 60, size);
   });
 }
 

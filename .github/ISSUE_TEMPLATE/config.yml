@@ -3,3 +3,9 @@ contact_links:
   - name: Try the live demo
     url: https://zinkxx.github.io/agent-office/
     about: See the office in your browser with made-up data before opening an issue.
+  - name: Ask a question or share an idea
+    url: https://github.com/zinkxx/agent-office/discussions
+    about: Questions, ideas and screenshots of your office are welcome in Discussions.
+  - name: Report a privacy or security problem
+    url: https://github.com/zinkxx/agent-office/security/advisories/new
+    about: Please report these privately, not as a public issue.

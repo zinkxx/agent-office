@@ -1,7 +1,7 @@
 {
   "name": "ajan-ofisi",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.1",
   "description": "Claude Code oturumlarını 3B bir ofiste canlı gösteren yerel uygulama",
   "type": "module",
   "workspaces": [

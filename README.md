@@ -224,6 +224,15 @@ GitHub Actions runs `npm run check` and a production UI build on every push to `
 - [x] **v3 · DevTechnic office:** brand wall and sign, visual upgrade of every area, full-viewport office
 - [x] Live browser demo on GitHub Pages (a desktop app was considered and dropped: the browser is enough)
 
+## Contributing
+
+Bug reports, ideas, translations and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) first; the
+privacy rules there are not optional. Good starting points are labelled
+[`good first issue`](https://github.com/zinkxx/agent-office/labels/good%20first%20issue), planned work is on the
+[roadmap board](https://github.com/users/zinkxx/projects/7), and questions go to
+[Discussions](https://github.com/zinkxx/agent-office/discussions). Found a privacy or security problem? Please report it
+privately, see [SECURITY.md](SECURITY.md).
+
 ## License
 
 [MIT](LICENSE) © Agent Office contributors.

@@ -40,6 +40,7 @@
 - [Proje yapısı](#proje-yapısı)
 - [Geliştirme ve testler](#geliştirme-ve-testler)
 - [Yol haritası](#yol-haritası)
+- [Katkı](#katkı)
 
 ## Nedir?
 
@@ -326,6 +327,15 @@ Ayrıntılı plan ve ilerleme günlüğü: [PLAN.md](PLAN.md).
 - [x] **Sürüm 3 · DevTechnic ofisi:** marka duvarı ve tabela, alanların görsel olarak geliştirilmesi, ofisin tüm
       tarayıcı alanını doldurması
 - [x] GitHub Pages'te tarayıcıda canlı demo (masaüstü uygulaması düşünüldü, gerek görülmedi: tarayıcı yeterli)
+
+## Katkı
+
+Hata bildirimi, fikir, çeviri ve pull request'ler memnuniyetle karşılanır. Önce [CONTRIBUTING.md](CONTRIBUTING.md)'yi
+okuyun; oradaki gizlilik kuralları zorunludur. Başlamak için
+[`good first issue`](https://github.com/zinkxx/agent-office/labels/good%20first%20issue) etiketli işlere, planlanan
+işler için [yol haritası panosuna](https://github.com/users/zinkxx/projects/7), sorular için
+[Discussions](https://github.com/zinkxx/agent-office/discussions)'a bakın. Gizlilik ya da güvenlik sorunu bulursanız
+lütfen gizli bildirin: [SECURITY.md](SECURITY.md).
 
 ## Lisans
 

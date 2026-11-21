@@ -647,3 +647,8 @@ güneş paneli, çatı bahçesi, helikopter pisti), park, otopark; uzak halkada 
   demo bağlantısı; gizlilik uyarılı, İngilizce, Türkçe yazılabilir). README'lerde sabit test rozeti yerine canlı CI
   rozeti, sürüm ve issue rozetleri (TR/EN test sayıları birbirini tutmuyordu). Başlangıç issue'ları, ek etiketler ve
   herkese açık "Agent Office Roadmap" proje panosu GitHub'da açıldı.
+- **21.11.2026:** Topluluk dosyaları ve v1.0.1 (kullanıcı istedi): CONTRIBUTING.md, SECURITY.md (GitHub özel güvenlik
+  bildirimi açıldı), CODE_OF_CONDUCT.md, PR şablonu (gizlilik kontrol listesi), dependabot.yml (aylık, gruplu),
+  CHANGELOG.md; README'lere "Katkı" bölümü. Depoda Discussions açıldı, boş wiki kapatıldı, Dependabot güvenlik
+  güncellemeleri etkin. Issue #1 düzeltildi: sade markada marka duvarı logosu yalnızca simge çiziyor (yazı tek,
+  altındaki şeritte). Paket sürümleri 0.1.0 → 1.0.1 (GitHub sürümüyle hizalandı).
