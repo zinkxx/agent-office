@@ -2,7 +2,7 @@ import { Canvas, useThree } from '@react-three/fiber';
 import { Bloom, EffectComposer, ToneMapping, Vignette } from '@react-three/postprocessing';
 import { ToneMappingMode } from 'postprocessing';
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
-import { ACESFilmicToneMapping, PCFSoftShadowMap } from 'three';
+import { ACESFilmicToneMapping, PCFShadowMap } from 'three';
 import { visibleAgents } from '../settings.ts';
 import { useCurrentView, useOffice, useTheme } from '../store.ts';
 import { AllProjectsScene } from './AllProjectsScene.tsx';
@@ -133,7 +133,7 @@ export function Office() {
   return (
     <>
       <Canvas
-        shadows={{ type: PCFSoftShadowMap }}
+        shadows={{ type: PCFShadowMap }}
         frameloop="never"
         dpr={lowPower ? 1 : [1, 2]}
         camera={{ position: [16, 18, 22], fov: 38, near: 0.3, far: 400 }}
