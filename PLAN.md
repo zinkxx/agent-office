@@ -652,3 +652,11 @@ güneş paneli, çatı bahçesi, helikopter pisti), park, otopark; uzak halkada 
   CHANGELOG.md; README'lere "Katkı" bölümü. Depoda Discussions açıldı, boş wiki kapatıldı, Dependabot güvenlik
   güncellemeleri etkin. Issue #1 düzeltildi: sade markada marka duvarı logosu yalnızca simge çiziyor (yazı tek,
   altındaki şeritte). Paket sürümleri 0.1.0 → 1.0.1 (GitHub sürümüyle hizalandı).
+- **21.11.2026:** Dependabot önerileri (kullanıcı onayladı, GitHub işlemleri tarayıcıda): Actions güncellemeleri
+  (#6–#9) birleştirildi. #10 (three 0.170 → 0.187) olduğu gibi birleştirilmedi: kilit dosyası kökte eski three'yi
+  tutuyordu, tarayıcıya iki three.js kopyası giriyordu. Ayrı bir kopyada (worktree) düzeltildi: tek kopya,
+  `overrides` @types/three 0.187.0, `PCFSoftShadowMap` (0.187'de kaldırıldı) → `PCFShadowMap`; demo ofisinde gözle
+  doğrulandı, düzeltme PR dalına eklenip birleştirildi. Büyük sürümler (#11–#14: chokidar 6, concurrently 10,
+  @types/node 26, TypeScript 7) "@dependabot ignore this major version" ile kapatıldı; dependabot.yml artık büyük
+  sürüm önermez. Not: drei içindeki stats-gl kendi three@0.170 kopyasını taşıyor ama uygulama kullanmadığı için
+  pakete girmiyor.

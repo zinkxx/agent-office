@@ -8,6 +8,10 @@ updates:
     groups:
       minor-and-patch:
         update-types: [minor, patch]
+    # Büyük sürümler (ör. TypeScript 7, chokidar 6) elle, ofis açılıp denenerek yükseltilir.
+    ignore:
+      - dependency-name: '*'
+        update-types: [version-update:semver-major]
   - package-ecosystem: github-actions
     directory: /
     schedule:

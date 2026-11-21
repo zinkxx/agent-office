@@ -2,6 +2,15 @@
 
 All notable changes to Agent Office are listed here. Versions follow [Semantic Versioning](https://semver.org).
 
+## [Unreleased]
+
+### Changed
+
+- three.js 0.170 → 0.187, with a single copy in the bundle (the update alone pulled in two) and matching type
+  definitions; shadows use `PCFShadowMap` (`PCFSoftShadowMap` was removed in three 0.187).
+- GitHub Actions: `checkout` and `setup-node` v7, `upload-pages-artifact` and `deploy-pages` v5.
+- Dependabot proposes only minor and patch updates; major versions are upgraded by hand after testing the office.
+
 ## [1.0.1] · 2026-11-21
 
 ### Fixed
