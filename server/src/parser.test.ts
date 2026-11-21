@@ -94,6 +94,8 @@ describe('parseLine', () => {
 
   it('fileNameOf yol olmayan değerlerde güvenli', () => {
     expect(fileNameOf('/a/b/c.ts')).toBe('c.ts');
+    expect(fileNameOf('C:\\Users\\kullanici\\Nova\\lib\\main.dart')).toBe('main.dart');
+    expect(fileNameOf('C:\\')).toBeUndefined();
     expect(fileNameOf('')).toBeUndefined();
     expect(fileNameOf(42)).toBeUndefined();
     expect(fileNameOf('/')).toBeUndefined();

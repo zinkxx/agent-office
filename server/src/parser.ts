@@ -1,4 +1,4 @@
-import path from 'node:path';
+import { lastPathSegment } from './paths.ts';
 
 /**
  * Bir kayıt satırından çıkarılan, gizlilik filtresinden geçmiş olay.
@@ -91,8 +91,7 @@ function shortLabel(value: unknown): string | undefined {
 /** Tam yoldan yalnızca dosya adı. Yol değilse ya da boşsa undefined. */
 export function fileNameOf(value: unknown): string | undefined {
   if (typeof value !== 'string' || !value.trim()) return undefined;
-  const name = path.basename(value.trim());
-  return name && name !== '.' && name !== '/' ? name : undefined;
+  return lastPathSegment(value);
 }
 
 function toolEvent(block: Record<string, unknown>, at: number): ParsedEvent | undefined {

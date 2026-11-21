@@ -1,5 +1,6 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { lastPathSegment } from './paths.ts';
 
 /** `~/.claude/sessions/<pid>.json` içinden kullandığımız alanlar. */
 export interface LiveSession {
@@ -34,7 +35,7 @@ function parseSession(raw: unknown): LiveSession | null {
   return {
     pid: r.pid,
     sessionId: r.sessionId,
-    name: typeof r.name === 'string' && r.name ? r.name : path.basename(r.cwd),
+    name: typeof r.name === 'string' && r.name ? r.name : (lastPathSegment(r.cwd) ?? ''),
     cwd: r.cwd,
     entrypoint,
     status: r.status === 'busy' ? 'busy' : 'idle',
