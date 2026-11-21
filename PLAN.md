@@ -660,3 +660,12 @@ güneş paneli, çatı bahçesi, helikopter pisti), park, otopark; uzak halkada 
   @types/node 26, TypeScript 7) "@dependabot ignore this major version" ile kapatıldı; dependabot.yml artık büyük
   sürüm önermez. Not: drei içindeki stats-gl kendi three@0.170 kopyasını taşıyor ama uygulama kullanmadığı için
   pakete girmiyor.
+- **21.11.2026:** Proje panosundaki Todo işleri (kullanıcı istedi; her biri ayrı dal + PR, GitHub işlemleri
+  tarayıcıda, kartlar otomatik Done): **#3** (PR #16) Windows/Linux: `server/src/paths.ts` `lastPathSegment` `/` ve
+  `\` ayırır — store.ts `projectOf` Windows'ta tam yolu proje adı yapıyordu (gizlilik hatası); `scripts/ortam.mjs`
+  ile `demo`/`build:demo` Windows'ta da çalışır; CI ubuntu/windows/macos matrisi (iş akışı dosyası gh izni yetmediği
+  için tarayıcıdaki GitHub düzenleyicisiyle); `.gitattributes` LF. **#5** (PR #17, geliştirici ajan) "Görüntü kaydet":
+  `office/capture.ts`, sahne `advance` ile yeniden çizilip `toDataURL`; etiketler HTML olduğundan görüntüye girmez
+  (gerçek yakalamayla doğrulandı). **#2** (PR #18, geliştirici ajan) TR/EN arayüz: `web/src/i18n.ts` (dil başına 194
+  metin, anahtar eşitliği tip düzeyinde), `settings.language`, varsayılan tarayıcı dili; 3B yazılar dahil; demo
+  görev başlıkları kapsam dışı. Toplam 32 test dosyası, 267 test; üç sistemde CI ve CodeQL geçti.

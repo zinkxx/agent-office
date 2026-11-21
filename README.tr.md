@@ -329,6 +329,8 @@ Ayrıntılı plan ve ilerleme günlüğü: [PLAN.md](PLAN.md).
 - [x] **Sürüm 3 · DevTechnic ofisi:** marka duvarı ve tabela, alanların görsel olarak geliştirilmesi, ofisin tüm
       tarayıcı alanını doldurması
 - [x] GitHub Pages'te tarayıcıda canlı demo (masaüstü uygulaması düşünüldü, gerek görülmedi: tarayıcı yeterli)
+- [x] İngilizce arayüz, görüntü kaydetme düğmesi, Windows ve Linux desteği
+- [ ] Fikirlere açık: [yol haritası panosu](https://github.com/users/zinkxx/projects/7) ve [Discussions](https://github.com/zinkxx/agent-office/discussions)
 
 ## Katkı
 

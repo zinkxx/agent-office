@@ -226,6 +226,8 @@ GitHub Actions runs `npm run check` and a production UI build on every push to `
 - [x] Performance, memory pruning, low-power mode, accessibility
 - [x] **v3 · DevTechnic office:** brand wall and sign, visual upgrade of every area, full-viewport office
 - [x] Live browser demo on GitHub Pages (a desktop app was considered and dropped: the browser is enough)
+- [x] English interface, save-image button, Windows and Linux support
+- [ ] Ideas welcome: see the [roadmap board](https://github.com/users/zinkxx/projects/7) and [Discussions](https://github.com/zinkxx/agent-office/discussions)
 
 ## Contributing
 

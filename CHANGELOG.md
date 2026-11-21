@@ -4,8 +4,19 @@ All notable changes to Agent Office are listed here. Versions follow [Semantic V
 
 ## [Unreleased]
 
+### Added
+
+- **English user interface:** Turkish or English in Settings → Language (Dil); the browser language decides on first
+  visit. Covers the whole UI and the texts in the 3D office ([#2](https://github.com/zinkxx/agent-office/issues/2)).
+- **Save image:** a top-bar button downloads the current 3D view as a PNG. Created in the browser, never uploaded; name
+  tags and file names are not in the image ([#5](https://github.com/zinkxx/agent-office/issues/5)).
+- **Windows and Linux:** CI runs tests and builds on Windows, macOS and Linux; `npm run demo` and `npm run build:demo`
+  work on Windows ([#3](https://github.com/zinkxx/agent-office/issues/3)).
+
 ### Fixed
 
+- Privacy on Windows: the project name was taken by splitting the folder path on `/` only, so a Windows path
+  (`C:\Users\…`) would have been shown in full. Paths are now split on `/` and `\` everywhere.
 - Live demo: the loading screen said "waiting for the local server, run `npm start`"; it now says the demo office is
   being prepared.
 
