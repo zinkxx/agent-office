@@ -3,7 +3,7 @@ import { Bloom, EffectComposer, ToneMapping, Vignette } from '@react-three/postp
 import { ToneMappingMode } from 'postprocessing';
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { ACESFilmicToneMapping, PCFShadowMap } from 'three';
-import { visibleAgents } from '../settings.ts';
+import { shownAgents } from '../closedProjects.ts';
 import { useCurrentView, useOffice, useTheme } from '../store.ts';
 import { AllProjectsScene } from './AllProjectsScene.tsx';
 import { registerCapture } from './capture.ts';
@@ -108,26 +108,27 @@ function Scenes() {
   const view = useCurrentView();
   const snapshot = useOffice((s) => s.snapshot);
   const hideOffline = useOffice((s) => s.settings.hideOffline);
+  const closedProjects = useOffice((s) => s.settings.closedProjects);
   const bank = useMemo(() => new ScreenBank(), []);
   useEffect(() => () => bank.dispose(), [bank]);
   const letters = snapshot?.letters ?? [];
   // "Kapalıları gizle": tüm projeler görünümünde bitmiş yardımcılar da gizlenir; proje ofisinde onlar
-  // kapıdan çıkarak ayrıldığı için sahneye verilmeye devam eder.
+  // kapıdan çıkarak ayrıldığı için sahneye verilmeye devam eder. Kapatılan projeler hiç çizilmez.
   const allAgents = useMemo(
-    () => visibleAgents(snapshot?.agents ?? [], hideOffline),
-    [snapshot, hideOffline],
+    () => shownAgents(snapshot?.agents ?? [], { hideOffline, closedProjects }),
+    [snapshot, hideOffline, closedProjects],
   );
   const projectAgents = useMemo(
     () =>
       view.kind === 'project'
-        ? visibleAgents(
+        ? shownAgents(
             (snapshot?.agents ?? []).filter((a) => a.project === view.project),
-            hideOffline,
+            { hideOffline, closedProjects },
             { keepFinished: true },
           )
         : [],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [snapshot, hideOffline, view.kind === 'project' ? view.project : null],
+    [snapshot, hideOffline, closedProjects, view.kind === 'project' ? view.project : null],
   );
   const team = useMemo(
     () =>

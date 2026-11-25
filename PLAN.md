@@ -672,3 +672,10 @@ güneş paneli, çatı bahçesi, helikopter pisti), park, otopark; uzak halkada 
 - **21.11.2026:** v1.1.0 yayınlandı (kullanıcı istedi): İngilizce arayüz, görüntü kaydetme, Windows/Linux desteği ve
   önceki düzeltmeler. Paket sürümleri 1.1.0; CHANGELOG başlığı ve karşılaştırma bağlantısı eklendi. Sürüm notu
   tarayıcıda GitHub'da yazıldı.
+- **25.11.2026:** Projeleri kapatma (kullanıcı istedi, dal `feature/projecten-sluiten`): "Tüm projeler" görünümünde
+  her proje başlığında × ve proje panelinde "Projeyi kapat". Kapatmak yalnızca Ajan Ofisi'nde gizler; oturumlara,
+  süreçlere ve `~/.claude`'a dokunulmaz, sunucu ve `shared/types.ts` değişmedi. Kayıt `settings.closedProjects`
+  (proje → kapatma anı, sunucu saati; en fazla 200, ad ≤ 80 karakter). Saf mantık `web/src/closedProjects.ts`
+  (+ test): liste, sahne, proje seçici, özet ve rol filtresi aynı filtreyi kullanır; projede yeni etkinlik olunca
+  proje kendiliğinden geri gelir ve kaydı silinir. Listenin altında "Kapatılan projeler (n)" bölümü (tek tek ya da
+  hepsini geri getir). TR/EN metinler eklendi.

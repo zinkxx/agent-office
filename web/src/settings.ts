@@ -60,6 +60,11 @@ export interface Settings {
   looks: Partial<Record<AgentRole, RoleLook>>;
   /** Proje başına maskot (yoksa maskot yok). */
   mascots: Record<string, MascotKind>;
+  /**
+   * Kapatılan (gizlenen) projeler: proje adı → kapatıldığı an (sunucu saati, ms). Yalnızca Ajan Ofisi'nde gizler;
+   * oturumlara ve dosyalara dokunulmaz. Projede bu andan sonra etkinlik olursa proje kendiliğinden geri gelir.
+   */
+  closedProjects: Record<string, number>;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -76,6 +81,7 @@ export const DEFAULT_SETTINGS: Settings = {
   lowPower: false,
   looks: {},
   mascots: {},
+  closedProjects: {},
 };
 
 export const SETTINGS_KEY = 'ajan-ofisi:ayarlar';
@@ -118,6 +124,7 @@ export function parseSettings(
     language: isLang(data.language) ? data.language : fallbackLanguage,
     looks: parseLooks(data.looks),
     mascots: parseMascots(data.mascots),
+    closedProjects: parseClosedProjects(data.closedProjects),
     theme,
     brand: isBrandId(data.brand) ? data.brand : DEFAULT_BRAND,
     hideFiles: bool('hideFiles'),
@@ -154,6 +161,52 @@ function parseMascots(value: unknown): Settings['mascots'] {
     if (project.length <= 80 && MASCOT_KINDS.includes(kind as MascotKind)) out[project] = kind as MascotKind;
   }
   return out;
+}
+
+/** Saklanan kapatılmış proje sayısının üst sınırı; aşılırsa en eski kapatılanlar atılır. */
+export const CLOSED_PROJECTS_MAX = 200;
+/** Saklanan proje adının en fazla uzunluğu (maskotlarla aynı). */
+export const CLOSED_PROJECT_NAME_MAX = 80;
+
+/**
+ * Kapatılmış projeleri doğrular: boş olmayan, en fazla 80 karakterlik ad ve sonlu, pozitif zaman. En fazla 200
+ * kayıt; fazlası varsa en eski kapatılanlar atılır.
+ */
+export function parseClosedProjects(value: unknown): Settings['closedProjects'] {
+  if (!isRecord(value)) return {};
+  const entries: [string, number][] = [];
+  for (const [project, at] of Object.entries(value)) {
+    if (project.length === 0 || project.length > CLOSED_PROJECT_NAME_MAX) continue;
+    if (typeof at !== 'number' || !Number.isFinite(at) || at <= 0) continue;
+    entries.push([project, at]);
+  }
+  return Object.fromEntries(limitClosed(entries));
+}
+
+/** En yeni kapatılan `CLOSED_PROJECTS_MAX` kaydı tutar. */
+function limitClosed(entries: [string, number][]): [string, number][] {
+  if (entries.length <= CLOSED_PROJECTS_MAX) return entries;
+  return [...entries].sort((a, b) => b[1] - a[1]).slice(0, CLOSED_PROJECTS_MAX);
+}
+
+/** Projeyi kapatılmış olarak ekler (zaten varsa zamanını günceller); üst sınırı korur. */
+export function withClosedProject(
+  closed: Settings['closedProjects'],
+  project: string,
+  at: number,
+): Settings['closedProjects'] {
+  const entries = Object.entries(closed).filter(([p]) => p !== project);
+  entries.push([project, at]);
+  return Object.fromEntries(limitClosed(entries));
+}
+
+/** Projeleri kapatılmışlardan çıkarır (geri getirme). Değişiklik yoksa aynı nesneyi döndürür. */
+export function withoutClosedProjects(
+  closed: Settings['closedProjects'],
+  projects: readonly string[],
+): Settings['closedProjects'] {
+  if (!projects.some((p) => Object.hasOwn(closed, p))) return closed;
+  return Object.fromEntries(Object.entries(closed).filter(([p]) => !projects.includes(p)));
 }
 
 /** Hareket gerçekten azaltılsın mı: tercih "sistem" ise işletim sisteminin ayarı geçerli. */

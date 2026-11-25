@@ -70,6 +70,9 @@ const tr = {
   'projectPanel.lastActive': 'Son etkinlik',
   'projectPanel.empty': 'Bu projede henüz kayıtlı işlem yok.',
   'projectPanel.openProject': 'Bu projenin ofisini aç',
+  'projectPanel.closeProject': 'Projeyi kapat',
+  'projectPanel.closeProjectTitle':
+    'Listeden ve ofisten gizle. Yeni etkinlik olunca kendiliğinden geri gelir.',
 
   'feed.aria': 'Canlı işlem akışı',
 
@@ -116,6 +119,17 @@ const tr = {
   'list.idleMembers': '{n} üye boşta',
   'list.hidden': '{n} gizli',
   'list.absentTitle': 'Ekipte tanımlı, şu an çalışmıyor',
+  'list.closeProjectAria': '{name} projesini kapat',
+  'list.closeProjectTitle': 'Listeden ve ofisten gizle. Yeni etkinlik olunca kendiliğinden geri gelir.',
+  'list.closedProjects': 'Kapatılan projeler ({n})',
+  'list.closedHint': 'Yeni etkinlik olan proje kendiliğinden geri gelir. Oturumlara ve dosyalara dokunulmaz.',
+  'list.restore': 'Geri getir',
+  'list.restoreAria': '{name} projesini geri getir',
+  'list.restoreAll': 'Hepsini geri getir',
+  'list.closedAnnounce': '{name} kapatıldı',
+  'list.restoredAnnounce': '{name} geri getirildi',
+  'list.emptyClosed':
+    'Tüm projeler kapatıldı. Aşağıdan geri getirebilirsin; yeni etkinlik olan proje kendiliğinden geri gelir.',
 
   'status.thinking': 'düşünüyor',
   'status.reading': 'okuyor',
@@ -310,6 +324,9 @@ const en: Record<MessageKey, string> = {
   'projectPanel.lastActive': 'Last active',
   'projectPanel.empty': 'No recorded activity in this project yet.',
   'projectPanel.openProject': 'Open this project’s office',
+  'projectPanel.closeProject': 'Close project',
+  'projectPanel.closeProjectTitle':
+    'Hide from the list and the office. It comes back by itself on new activity.',
 
   'feed.aria': 'Live activity feed',
 
@@ -356,6 +373,18 @@ const en: Record<MessageKey, string> = {
   'list.idleMembers': '{n} {n|member|members} idle',
   'list.hidden': '{n} hidden',
   'list.absentTitle': 'Defined in the team, not working right now',
+  'list.closeProjectAria': 'Close project {name}',
+  'list.closeProjectTitle': 'Hide from the list and the office. It comes back by itself on new activity.',
+  'list.closedProjects': 'Closed projects ({n})',
+  'list.closedHint':
+    'A project comes back by itself when there is new activity. Sessions and files are not touched.',
+  'list.restore': 'Restore',
+  'list.restoreAria': 'Restore project {name}',
+  'list.restoreAll': 'Restore all',
+  'list.closedAnnounce': '{name} closed',
+  'list.restoredAnnounce': '{name} restored',
+  'list.emptyClosed':
+    'All projects are closed. You can restore them below; a project with new activity comes back by itself.',
 
   'status.thinking': 'thinking',
   'status.reading': 'reading',

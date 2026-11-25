@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import { create } from 'zustand';
 import type { AgentRole, OfficeSnapshot, ServerMessage } from '../../shared/types.ts';
+import { closeTime, openSnapshot, reopenedProjects } from './closedProjects.ts';
 import { appendFeed, newFeedItems, type FeedItem } from './feed.ts';
 import { browserLanguage, defaultLang, translate, translator, type Lang, type Translate } from './i18n.ts';
 import { LAYOUTS_KEY, parseLayouts, withIsland, withoutProject, type SavedLayouts } from './layouts.ts';
@@ -8,6 +10,8 @@ import {
   SETTINGS_KEY,
   effectiveReducedMotion,
   parseSettings,
+  withClosedProject,
+  withoutClosedProjects,
   type RoleLook,
   type Settings,
 } from './settings.ts';
@@ -95,6 +99,10 @@ interface OfficeState {
   setView: (key: string) => void;
   toggleRole: (role: AgentRole) => void;
   clearRoles: () => void;
+  /** Projeyi listeden ve ofisten gizler (yalnızca Ajan Ofisi'nde; yeni etkinlik olunca kendiliğinden geri gelir). */
+  closeProject: (project: string) => void;
+  restoreProject: (project: string) => void;
+  restoreAll: () => void;
 }
 
 const VIEW_KEY = 'ajan-ofisi:proje';
@@ -259,6 +267,30 @@ export const useOffice = create<OfficeState>((set, get) => ({
     storeLayouts(layouts);
     set({ layouts });
   },
+  closeProject: (project) => {
+    const s = get();
+    const agents = s.snapshot?.agents ?? [];
+    // Kapatma anı sunucu saatiyle (lastActivityAt da sunucu saatidir).
+    const at = closeTime(agents, project, Date.now() + s.clockOffset);
+    s.updateSettings({ closedProjects: withClosedProject(s.settings.closedProjects, project, at) });
+    const selected = s.selectedId ? agents.find((a) => a.id === s.selectedId) : undefined;
+    const clearProject = s.selectedProject === project;
+    const clearAgent = selected?.project === project;
+    if (clearProject || clearAgent)
+      set((st) => ({
+        ...(clearProject ? { selectedProject: null } : {}),
+        ...(clearAgent ? { selectedId: null } : {}),
+        focusTick: st.focusTick + 1,
+      }));
+  },
+  restoreProject: (project) => {
+    const closed = get().settings.closedProjects;
+    const next = withoutClosedProjects(closed, [project]);
+    if (next !== closed) get().updateSettings({ closedProjects: next });
+  },
+  restoreAll: () => {
+    if (Object.keys(get().settings.closedProjects).length > 0) get().updateSettings({ closedProjects: {} });
+  },
 }));
 
 /** Sunucudan geleni doğrular; tanınmayan mesajı yok sayar. */
@@ -286,6 +318,10 @@ export function applySnapshot(snapshot: OfficeSnapshot): void {
     const cue = soundCues(state.snapshot, snapshot)[0];
     if (cue) sounds.play(cue, state.settings.volume);
   }
+  // Kapatılmış projede yeni etkinlik varsa proje kendiliğinden geri gelir: kaydı silinir.
+  const reopened = reopenedProjects(snapshot.agents, state.settings.closedProjects);
+  if (reopened.length > 0)
+    state.updateSettings({ closedProjects: withoutClosedProjects(state.settings.closedProjects, reopened) });
   useOffice.setState({
     snapshot,
     ...(fresh.length > 0 ? { feed: appendFeed(state.feed, fresh) } : {}),
@@ -384,8 +420,17 @@ export function useTheme(): OfficeTheme {
   return themeById(useOffice((s) => s.settings.theme));
 }
 
+/** Kapalı projeleri çıkarılmış anlık görüntü (proje seçici, rol filtresi). */
+export function useOpenSnapshot(): OfficeSnapshot | null {
+  const snapshot = useOffice((s) => s.snapshot);
+  const closed = useOffice((s) => s.settings.closedProjects);
+  return useMemo(() => openSnapshot(snapshot, closed), [snapshot, closed]);
+}
+
 /** Çizilecek görünüm: hatırlanan seçim ya da en son etkin proje (bkz. view.ts). */
 export function useCurrentView(): View {
-  const key = useOffice((s) => viewKey(resolveView(s.savedView, s.snapshot)));
+  const key = useOffice((s) =>
+    viewKey(resolveView(s.savedView, openSnapshot(s.snapshot, s.settings.closedProjects))),
+  );
   return key === ALL_PROJECTS ? { kind: 'all' } : { kind: 'project', project: key };
 }

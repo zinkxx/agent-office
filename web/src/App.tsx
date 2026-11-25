@@ -14,12 +14,22 @@ import {
   roleLabel,
 } from './labels.ts';
 import { Office } from './office/Office.tsx';
+import { shownAgents } from './closedProjects.ts';
 import { visibleAgents } from './settings.ts';
 import { EditLayoutButton, LayoutBar } from './LayoutBar.tsx';
 import { SettingsButton, SettingsPanel } from './SettingsPanel.tsx';
 import { brandTexts } from './office/brand.ts';
 import { captureView, dataUrlToBytes, snapshotFileName } from './office/capture.ts';
-import { STATIC_DEMO, useBrand, useCurrentView, useLang, useOffice, useT, useTheme } from './store.ts';
+import {
+  STATIC_DEMO,
+  useBrand,
+  useCurrentView,
+  useLang,
+  useOffice,
+  useOpenSnapshot,
+  useT,
+  useTheme,
+} from './store.ts';
 import { ALL_PROJECTS, projectsOf, viewKey } from './view.ts';
 
 function ConnectionBadge() {
@@ -45,7 +55,8 @@ function ConnectionBadge() {
 
 /** Proje seçici: "Tüm projeler" ya da tek proje. Seçim tarayıcıda hatırlanır. */
 function ProjectPicker() {
-  const snapshot = useOffice((s) => s.snapshot);
+  // Kapatılan projeler seçicide yer almaz.
+  const snapshot = useOpenSnapshot();
   const setView = useOffice((s) => s.setView);
   const view = useCurrentView();
   const projects = useMemo(() => projectsOf(snapshot), [snapshot]);
@@ -72,12 +83,13 @@ function ProjectPicker() {
 function Summary() {
   const agents = useOffice((s) => s.snapshot?.agents);
   const hideOffline = useOffice((s) => s.settings.hideOffline);
+  const closedProjects = useOffice((s) => s.settings.closedProjects);
   const view = useCurrentView();
   const t = useT();
   if (!agents) return null;
-  const inView = visibleAgents(
+  const inView = shownAgents(
     view.kind === 'all' ? agents : agents.filter((a) => a.project === view.project),
-    hideOffline,
+    { hideOffline, closedProjects },
   );
   const sessions = inView.filter((a) => a.kind === 'session');
   const working = inView.filter((a) => isActive(a.status)).length;
@@ -218,6 +230,7 @@ function ProjectPanel() {
   const selectProject = useOffice((s) => s.selectProject);
   const select = useOffice((s) => s.select);
   const setView = useOffice((s) => s.setView);
+  const closeProject = useOffice((s) => s.closeProject);
   const view = useCurrentView();
   const now = useServerNow(5_000);
   const t = useT();
@@ -252,9 +265,22 @@ function ProjectPanel() {
         {overview.lastActivityAt > 0 &&
           ` · ${t('projectPanel.lastActive')} ${agoText(overview.lastActivityAt, now, lang)}`}
       </p>
-      <button type="button" className="ghost" onClick={() => setView(project)}>
-        {t('projectPanel.openProject')}
-      </button>
+      <div className="project-actions">
+        <button type="button" className="ghost" onClick={() => setView(project)}>
+          {t('projectPanel.openProject')}
+        </button>
+        <button
+          type="button"
+          className="ghost"
+          title={t('projectPanel.closeProjectTitle')}
+          onClick={() => {
+            closeProject(project);
+            selectProject(null);
+          }}
+        >
+          {t('projectPanel.closeProject')}
+        </button>
+      </div>
 
       {overview.sessions.length > 0 && (
         <>
