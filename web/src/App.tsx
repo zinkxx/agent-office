@@ -105,11 +105,10 @@ function Summary() {
 /** Seçili karakterin ayrıntıları: rol, ad, durum, şu anki işlem, son işlemler, çalışma süresi. */
 function DetailPanel() {
   const selectedId = useOffice((s) => s.selectedId);
-  const agent = useOffice((s) => s.snapshot?.agents.find((a) => a.id === s.selectedId));
-  const parent = useOffice((s) => {
-    const a = s.snapshot?.agents.find((x) => x.id === s.selectedId);
-    return a?.parentId ? s.snapshot?.agents.find((x) => x.id === a.parentId) : undefined;
-  });
+  // Kapalı projelerin ajanları açılamaz: seçim açık anlık görüntüde aranır.
+  const openSnap = useOpenSnapshot();
+  const agent = openSnap?.agents.find((a) => a.id === selectedId);
+  const parent = agent?.parentId ? openSnap?.agents.find((x) => x.id === agent.parentId) : undefined;
   const hideFiles = useOffice((s) => s.settings.hideFiles);
   const showTitles = useOffice((s) => s.settings.showTitles);
   const select = useOffice((s) => s.select);
@@ -273,10 +272,8 @@ function ProjectPanel() {
           type="button"
           className="ghost"
           title={t('projectPanel.closeProjectTitle')}
-          onClick={() => {
-            closeProject(project);
-            selectProject(null);
-          }}
+          // closeProject seçili projeyi de siler (bkz. closedProjects.ts selectionAfterClose).
+          onClick={() => closeProject(project)}
         >
           {t('projectPanel.closeProject')}
         </button>
@@ -338,15 +335,17 @@ function ProjectPanel() {
 function Feed() {
   const feed = useOffice((s) => s.feed);
   const hideFiles = useOffice((s) => s.settings.hideFiles);
-  const agents = useOffice((s) => s.snapshot?.agents);
+  // Kapalı projelerin ajanları çıkarılmış: akışta onların işlemleri görünmez, tıklanıp seçilemez.
+  const agents = useOpenSnapshot()?.agents;
   const select = useOffice((s) => s.select);
   const editing = useOffice((s) => s.editingLayout);
   const view = useCurrentView();
   const t = useT();
   const lang = useLang();
   const items = useMemo(() => {
-    if (view.kind === 'all') return feed;
-    const ids = new Set((agents ?? []).filter((a) => a.project === view.project).map((a) => a.id));
+    const ids = new Set(
+      (agents ?? []).filter((a) => view.kind === 'all' || a.project === view.project).map((a) => a.id),
+    );
     return feed.filter((f) => ids.has(f.agentId));
   }, [feed, agents, view]);
   // Düzenleme çubuğu ekranın altını kullanır; akış o sırada gizlenir.

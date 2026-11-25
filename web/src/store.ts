@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { create } from 'zustand';
 import type { AgentRole, OfficeSnapshot, ServerMessage } from '../../shared/types.ts';
-import { closeTime, openSnapshot, reopenedProjects } from './closedProjects.ts';
+import { closeTime, openSnapshot, pruneReopened, selectionAfterClose } from './closedProjects.ts';
 import { appendFeed, newFeedItems, type FeedItem } from './feed.ts';
 import { browserLanguage, defaultLang, translate, translator, type Lang, type Translate } from './i18n.ts';
 import { LAYOUTS_KEY, parseLayouts, withIsland, withoutProject, type SavedLayouts } from './layouts.ts';
@@ -273,15 +273,8 @@ export const useOffice = create<OfficeState>((set, get) => ({
     // Kapatma anı sunucu saatiyle (lastActivityAt da sunucu saatidir).
     const at = closeTime(agents, project, Date.now() + s.clockOffset);
     s.updateSettings({ closedProjects: withClosedProject(s.settings.closedProjects, project, at) });
-    const selected = s.selectedId ? agents.find((a) => a.id === s.selectedId) : undefined;
-    const clearProject = s.selectedProject === project;
-    const clearAgent = selected?.project === project;
-    if (clearProject || clearAgent)
-      set((st) => ({
-        ...(clearProject ? { selectedProject: null } : {}),
-        ...(clearAgent ? { selectedId: null } : {}),
-        focusTick: st.focusTick + 1,
-      }));
+    const cleared = selectionAfterClose(agents, project, s);
+    if (cleared) set((st) => ({ ...cleared, focusTick: st.focusTick + 1 }));
   },
   restoreProject: (project) => {
     const closed = get().settings.closedProjects;
@@ -319,9 +312,8 @@ export function applySnapshot(snapshot: OfficeSnapshot): void {
     if (cue) sounds.play(cue, state.settings.volume);
   }
   // Kapatılmış projede yeni etkinlik varsa proje kendiliğinden geri gelir: kaydı silinir.
-  const reopened = reopenedProjects(snapshot.agents, state.settings.closedProjects);
-  if (reopened.length > 0)
-    state.updateSettings({ closedProjects: withoutClosedProjects(state.settings.closedProjects, reopened) });
+  const closedProjects = pruneReopened(snapshot.agents, state.settings.closedProjects);
+  if (closedProjects !== state.settings.closedProjects) state.updateSettings({ closedProjects });
   useOffice.setState({
     snapshot,
     ...(fresh.length > 0 ? { feed: appendFeed(state.feed, fresh) } : {}),

@@ -1,5 +1,5 @@
 import type { Agent, OfficeSnapshot } from '../../shared/types.ts';
-import { visibleAgents, type Settings } from './settings.ts';
+import { visibleAgents, withoutClosedProjects, type Settings } from './settings.ts';
 
 /**
  * Kapatılan (gizlenen) projeler. Saf fonksiyonlar, React'sız ve testli. "Kapatmak" yalnızca Ajan Ofisi'nde
@@ -32,6 +32,39 @@ export function reopenedProjects(agents: readonly Agent[], closed: ClosedProject
   return Object.entries(closed)
     .filter(([project, at]) => !isProjectClosed(agents, project, at))
     .map(([project]) => project);
+}
+
+/**
+ * Anlık görüntü geldiğinde kapatma kayıtlarını temizler: yeniden etkinlik olan projelerin kaydı silinir (proje
+ * geri gelir). Silinecek kayıt yoksa aynı nesne döner (bkz. store.ts applySnapshot).
+ */
+export function pruneReopened(agents: readonly Agent[], closed: ClosedProjects): ClosedProjects {
+  const reopened = reopenedProjects(agents, closed);
+  return reopened.length === 0 ? closed : withoutClosedProjects(closed, reopened);
+}
+
+export interface Selection {
+  selectedId: string | null;
+  selectedProject: string | null;
+}
+
+/**
+ * Proje kapatılınca silinecek seçimler: o proje seçiliyse proje seçimi, seçili ajan o projedeyse ajan seçimi.
+ * Silinecek bir şey yoksa `null` (bkz. store.ts closeProject).
+ */
+export function selectionAfterClose(
+  agents: readonly Agent[],
+  project: string,
+  selection: Selection,
+): Partial<{ selectedId: null; selectedProject: null }> | null {
+  const clearProject = selection.selectedProject === project;
+  const selected = selection.selectedId ? agents.find((a) => a.id === selection.selectedId) : undefined;
+  const clearAgent = selected?.project === project;
+  if (!clearProject && !clearAgent) return null;
+  return {
+    ...(clearProject ? { selectedProject: null } : {}),
+    ...(clearAgent ? { selectedId: null } : {}),
+  };
 }
 
 /** Kapalı projelerin ajanları çıkarılmış liste. Kapalı proje yoksa aynı dizi döner. */

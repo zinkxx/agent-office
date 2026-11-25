@@ -6,12 +6,15 @@ import {
   closedProjectSet,
   isProjectClosed,
   openSnapshot,
+  pruneReopened,
   reopenedProjects,
+  selectionAfterClose,
   shownAgents,
   withoutClosed,
 } from './closedProjects.ts';
 import {
   CLOSED_PROJECTS_MAX,
+  CLOSED_PROJECT_NAME_MAX,
   parseClosedProjects,
   parseSettings,
   withClosedProject,
@@ -79,9 +82,9 @@ describe('parseClosedProjects', () => {
     ).toEqual({ Tamam: 1 });
   });
 
-  it('ad sınırı 80 karakter', () => {
-    const ok = 'a'.repeat(80);
-    const tooLong = 'b'.repeat(81);
+  it(`ad sınırı ${CLOSED_PROJECT_NAME_MAX} karakter`, () => {
+    const ok = 'a'.repeat(CLOSED_PROJECT_NAME_MAX);
+    const tooLong = 'b'.repeat(CLOSED_PROJECT_NAME_MAX + 1);
     expect(parseClosedProjects({ [ok]: 1, [tooLong]: 1 })).toEqual({ [ok]: 1 });
   });
 
@@ -118,6 +121,18 @@ describe('kapatma ve geri getirme kayıtları', () => {
     expect(Object.keys(next)).toHaveLength(CLOSED_PROJECTS_MAX);
     expect(next).toHaveProperty('Atlas', 10_000);
     expect(next).not.toHaveProperty('p1');
+  });
+
+  it('ekleme ile okuma aynı kuralı kullanır: geçersiz kayıt eklenmez', () => {
+    const closed = { Atlas: 1 };
+    const long = 'a'.repeat(CLOSED_PROJECT_NAME_MAX);
+    const added = withClosedProject(closed, long, 5);
+    expect(added).toHaveProperty(long, 5);
+    expect(parseClosedProjects(JSON.parse(JSON.stringify(added)))).toEqual(added);
+    expect(withClosedProject(closed, 'b'.repeat(CLOSED_PROJECT_NAME_MAX + 1), 5)).toBe(closed);
+    expect(withClosedProject(closed, '', 5)).toBe(closed);
+    expect(withClosedProject(closed, 'Nova', 0)).toBe(closed);
+    expect(withClosedProject(closed, 'Nova', Number.NaN)).toBe(closed);
   });
 
   it('geri getirince kaydı siler; değişiklik yoksa aynı nesne', () => {
@@ -222,5 +237,48 @@ describe('görünüm geri düşüşü', () => {
       kind: 'project',
       project: 'Nova',
     });
+  });
+});
+
+describe('anlık görüntüde temizlik (pruneReopened)', () => {
+  it('yeniden etkinlik olan projenin kaydını siler', () => {
+    // Atlas 250'de kapatıldı, atlas-2 300'de çalıştı: geri gelir. Nova 600'de kapatıldı: kapalı kalır.
+    expect(pruneReopened(agents, { Atlas: 250, Nova: 600 })).toEqual({ Nova: 600 });
+  });
+
+  it('silinecek kayıt yoksa aynı nesne döner', () => {
+    const closed = { Atlas: 300, Nova: 600 };
+    expect(pruneReopened(agents, closed)).toBe(closed);
+    const empty = {};
+    expect(pruneReopened(agents, empty)).toBe(empty);
+  });
+});
+
+describe('kapatınca seçimin temizlenmesi (selectionAfterClose)', () => {
+  it('kapatılan proje seçiliyse proje seçimi silinir', () => {
+    expect(selectionAfterClose(agents, 'Atlas', { selectedId: null, selectedProject: 'Atlas' })).toEqual({
+      selectedProject: null,
+    });
+  });
+
+  it('seçili ajan kapatılan projedeyse ajan seçimi silinir', () => {
+    expect(selectionAfterClose(agents, 'Atlas', { selectedId: 'atlas-2', selectedProject: 'Nova' })).toEqual({
+      selectedId: null,
+    });
+    expect(selectionAfterClose(agents, 'Atlas', { selectedId: 'atlas-1', selectedProject: 'Atlas' })).toEqual(
+      {
+        selectedId: null,
+        selectedProject: null,
+      },
+    );
+  });
+
+  it('başka projedeki seçimlere dokunmaz', () => {
+    expect(
+      selectionAfterClose(agents, 'Atlas', { selectedId: 'nova-1', selectedProject: 'Nova' }),
+    ).toBeNull();
+    expect(selectionAfterClose(agents, 'Atlas', { selectedId: null, selectedProject: null })).toBeNull();
+    // Anlık görüntüde olmayan seçili ajan: silinecek bir şey yok.
+    expect(selectionAfterClose(agents, 'Atlas', { selectedId: 'yok', selectedProject: null })).toBeNull();
   });
 });

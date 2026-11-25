@@ -165,19 +165,24 @@ function parseMascots(value: unknown): Settings['mascots'] {
 
 /** Saklanan kapatılmış proje sayısının üst sınırı; aşılırsa en eski kapatılanlar atılır. */
 export const CLOSED_PROJECTS_MAX = 200;
-/** Saklanan proje adının en fazla uzunluğu (maskotlarla aynı). */
-export const CLOSED_PROJECT_NAME_MAX = 80;
+/** Saklanan proje adının en fazla uzunluğu. Okuma (parse) ve ekleme (withClosedProject) aynı kuralı kullanır. */
+export const CLOSED_PROJECT_NAME_MAX = 255;
+
+/** Kapatılmış proje kaydı geçerli mi: boş olmayan, en fazla `CLOSED_PROJECT_NAME_MAX` karakterlik ad ve sonlu, pozitif zaman. */
+function validClosedEntry(project: string, at: unknown): at is number {
+  if (project.length === 0 || project.length > CLOSED_PROJECT_NAME_MAX) return false;
+  return typeof at === 'number' && Number.isFinite(at) && at > 0;
+}
 
 /**
- * Kapatılmış projeleri doğrular: boş olmayan, en fazla 80 karakterlik ad ve sonlu, pozitif zaman. En fazla 200
- * kayıt; fazlası varsa en eski kapatılanlar atılır.
+ * Kapatılmış projeleri doğrular (bkz. validClosedEntry). En fazla `CLOSED_PROJECTS_MAX` kayıt; fazlası varsa en
+ * eski kapatılanlar atılır.
  */
 export function parseClosedProjects(value: unknown): Settings['closedProjects'] {
   if (!isRecord(value)) return {};
   const entries: [string, number][] = [];
   for (const [project, at] of Object.entries(value)) {
-    if (project.length === 0 || project.length > CLOSED_PROJECT_NAME_MAX) continue;
-    if (typeof at !== 'number' || !Number.isFinite(at) || at <= 0) continue;
+    if (!validClosedEntry(project, at)) continue;
     entries.push([project, at]);
   }
   return Object.fromEntries(limitClosed(entries));
@@ -189,12 +194,16 @@ function limitClosed(entries: [string, number][]): [string, number][] {
   return [...entries].sort((a, b) => b[1] - a[1]).slice(0, CLOSED_PROJECTS_MAX);
 }
 
-/** Projeyi kapatılmış olarak ekler (zaten varsa zamanını günceller); üst sınırı korur. */
+/**
+ * Projeyi kapatılmış olarak ekler (zaten varsa zamanını günceller); üst sınırı korur. Geçersiz kayıt (bkz.
+ * validClosedEntry) eklenmez ve aynı nesne döner: yeniden yüklemede atılacak bir kayıt hiç saklanmaz.
+ */
 export function withClosedProject(
   closed: Settings['closedProjects'],
   project: string,
   at: number,
 ): Settings['closedProjects'] {
+  if (!validClosedEntry(project, at)) return closed;
   const entries = Object.entries(closed).filter(([p]) => p !== project);
   entries.push([project, at]);
   return Object.fromEntries(limitClosed(entries));

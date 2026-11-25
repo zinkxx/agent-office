@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { closedProjectList, shownAgents } from './closedProjects.ts';
+import { closedProjectList } from './closedProjects.ts';
+import { visibleAgents } from './settings.ts';
 import type { Agent, AgentRole, TeamMember } from '../../shared/types.ts';
 import type { Lang } from './i18n.ts';
 import {
@@ -258,7 +259,7 @@ export function AgentList() {
     const inView = (openSnap?.agents ?? []).filter(
       (a) => (view.kind === 'all' || a.project === view.project) && roleOk(a.role),
     );
-    const agents = shownAgents(inView, { hideOffline, closedProjects: {} });
+    const agents = visibleAgents(inView, hideOffline);
     const hiddenBy = new Map<string, number>();
     for (const a of inView)
       if (!agents.includes(a)) hiddenBy.set(a.project, (hiddenBy.get(a.project) ?? 0) + 1);
