@@ -1,4 +1,6 @@
 import { useMemo } from 'react';
+import type { Agent } from '../../shared/types.ts';
+import { projectDisplayName, projectOverview } from './projectActivity.ts';
 import { AgentList, ListFilters, statusText, useServerNow } from './AgentList.tsx';
 import { feedText } from './feed.ts';
 import {
@@ -176,6 +178,136 @@ function DetailPanel() {
   );
 }
 
+/** Bir ajan satırı (proje panelindeki oturum ve yardımcı listeleri). */
+function ProjectAgentRow({ agent }: { agent: Agent }) {
+  const select = useOffice((s) => s.select);
+  const showTitles = useOffice((s) => s.settings.showTitles);
+  const lang = useLang();
+  const active = isActive(agent.status);
+  return (
+    <li>
+      <button type="button" onClick={() => select(agent.id)} title={agent.name}>
+        <span
+          className={`dot${active ? ' pulse' : ''}`}
+          style={{ background: STATUS_COLOR[agent.status], color: STATUS_COLOR[agent.status] }}
+        />
+        <span className="who">
+          <span className="who-name">{agent.name}</span>
+          {agent.kind === 'session' && showTitles && agent.title ? (
+            <span className="who-title">{agent.title}</span>
+          ) : agent.kind === 'subagent' ? (
+            <span className="who-title">{roleLabel(agent.role, lang)}</span>
+          ) : null}
+        </span>
+        <span className="who-status">{statusText(agent, lang)}</span>
+      </button>
+    </li>
+  );
+}
+
+/**
+ * "Tüm projeler" görünümünde tıklanan projenin paneli: oturumlar, yardımcılar ve tüm ajanların işlemleri tek
+ * zaman çizelgesinde. Satıra tıklayınca o ajan seçilir.
+ */
+function ProjectPanel() {
+  const project = useOffice((s) => s.selectedProject);
+  const agents = useOffice((s) => s.snapshot?.agents);
+  const hideOffline = useOffice((s) => s.settings.hideOffline);
+  const hideFiles = useOffice((s) => s.settings.hideFiles);
+  const showTitles = useOffice((s) => s.settings.showTitles);
+  const selectProject = useOffice((s) => s.selectProject);
+  const select = useOffice((s) => s.select);
+  const setView = useOffice((s) => s.setView);
+  const view = useCurrentView();
+  const now = useServerNow(5_000);
+  const t = useT();
+  const lang = useLang();
+  const overview = useMemo(
+    () => (project && agents ? projectOverview(visibleAgents(agents, hideOffline), project) : null),
+    [project, agents, hideOffline],
+  );
+  if (view.kind !== 'all' || !project || !overview) return null;
+  return (
+    <section className="detail project-panel glass" aria-label={t('projectPanel.aria')}>
+      <header className="detail-head">
+        <span className="role-chip big" style={{ ['--role-color' as string]: ROLE_COLOR.lead }}>
+          {t('projectPanel.kicker')}
+        </span>
+        <button
+          type="button"
+          className="icon-btn"
+          onClick={() => selectProject(null)}
+          aria-label={t('projectPanel.close')}
+        >
+          ×
+        </button>
+      </header>
+      <h2 className="detail-name">{projectDisplayName(agents ?? [], project, showTitles)}</h2>
+      {projectDisplayName(agents ?? [], project, showTitles) !== project && (
+        <p className="detail-title mono">{project}</p>
+      )}
+      <p className="detail-title">
+        {t('summary.sessions', { n: overview.sessions.length })} ·{' '}
+        {t('summary.working', { n: overview.working })}
+        {overview.lastActivityAt > 0 &&
+          ` · ${t('projectPanel.lastActive')} ${agoText(overview.lastActivityAt, now, lang)}`}
+      </p>
+      <button type="button" className="ghost" onClick={() => setView(project)}>
+        {t('projectPanel.openProject')}
+      </button>
+
+      {overview.sessions.length > 0 && (
+        <>
+          <h3 className="detail-sub">
+            {t('projectPanel.sessions')} <span className="count">{overview.sessions.length}</span>
+          </h3>
+          <ul className="project-sessions">
+            {overview.sessions.map((a) => (
+              <ProjectAgentRow key={a.id} agent={a} />
+            ))}
+          </ul>
+        </>
+      )}
+      {overview.helpers.length > 0 && (
+        <>
+          <h3 className="detail-sub">
+            {t('projectPanel.helpers')} <span className="count">{overview.helpers.length}</span>
+          </h3>
+          <ul className="project-sessions">
+            {overview.helpers.map((a) => (
+              <ProjectAgentRow key={a.id} agent={a} />
+            ))}
+          </ul>
+        </>
+      )}
+
+      <h3 className="detail-sub">
+        {t('projectPanel.timeline')} <span className="count">{overview.items.length}</span>
+      </h3>
+      {overview.items.length === 0 ? (
+        <p className="project-empty">{t('projectPanel.empty')}</p>
+      ) : (
+        <ol className="project-timeline">
+          {overview.items.map((item, i) => (
+            <li key={`${item.agentId}-${item.activity.at}-${i}`}>
+              <button type="button" onClick={() => select(item.agentId)} title={item.name}>
+                <span
+                  className="feed-dot inline"
+                  style={{ background: ROLE_COLOR[item.role] }}
+                  aria-hidden="true"
+                />
+                <span className="what mono">{activityText(item.activity, hideFiles)}</span>
+                <span className="by">{item.name}</span>
+                <span className="ago">{agoText(item.activity.at, now, lang)}</span>
+              </button>
+            </li>
+          ))}
+        </ol>
+      )}
+    </section>
+  );
+}
+
 /** Ekranın köşesindeki canlı işlem akışı: "Tasarımcı · Edit · theme.dart". */
 function Feed() {
   const feed = useOffice((s) => s.feed);
@@ -315,7 +447,10 @@ export function App() {
         <button
           type="button"
           className="ghost with-icon"
-          onClick={() => select(null)}
+          onClick={() => {
+            select(null);
+            useOffice.getState().selectProject(null);
+          }}
           title={t('top.wholeOfficeTitle')}
           aria-label={t('top.wholeOffice')}
         >
@@ -365,6 +500,7 @@ export function App() {
       <SettingsPanel />
       <LayoutBar />
       <DetailPanel />
+      <ProjectPanel />
       <Feed />
 
       <aside id="side-panel" className="side-panel glass" aria-hidden={!panelOpen}>

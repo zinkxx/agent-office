@@ -55,6 +55,8 @@ interface OfficeState {
   clockOffset: number;
   /** Listede/sahnede seçili ajan; kamera buna odaklanır. */
   selectedId: string | null;
+  /** "Tüm projeler" görünümünde tıklanan proje (proje paneli); ajan seçimiyle birlikte olmaz. */
+  selectedProject: string | null;
   /** Her seçimde artar: aynı ajana tekrar tıklanınca da kamera yeniden odaklansın. */
   focusTick: number;
   panelOpen: boolean;
@@ -82,6 +84,7 @@ interface OfficeState {
   /** Geçerli karar: ayardaki tercih + işletim sistemi (bkz. effectiveReducedMotion). */
   reducedMotion: boolean;
   select: (id: string | null) => void;
+  selectProject: (project: string | null) => void;
   togglePanel: () => void;
   updateSettings: (patch: Partial<Settings>) => void;
   setSettingsOpen: (open: boolean) => void;
@@ -171,6 +174,7 @@ export const useOffice = create<OfficeState>((set, get) => ({
   snapshot: null,
   clockOffset: 0,
   selectedId: null,
+  selectedProject: null,
   focusTick: 0,
   panelOpen: true,
   settings: initialSettings,
@@ -185,7 +189,18 @@ export const useOffice = create<OfficeState>((set, get) => ({
   feed: [],
   systemReducedMotion: initialSystemReduced,
   reducedMotion: effectiveReducedMotion(initialSettings.motion, initialSystemReduced),
-  select: (id) => set((s) => ({ selectedId: id, focusTick: s.focusTick + 1 })),
+  select: (id) =>
+    set((s) => ({
+      selectedId: id,
+      selectedProject: id ? null : s.selectedProject,
+      focusTick: s.focusTick + 1,
+    })),
+  selectProject: (project) =>
+    set((s) => ({
+      selectedProject: project,
+      selectedId: project ? null : s.selectedId,
+      focusTick: s.focusTick + 1,
+    })),
   setView: (key) => {
     try {
       localStorage.setItem(VIEW_KEY, key);
@@ -195,6 +210,7 @@ export const useOffice = create<OfficeState>((set, get) => ({
     set((s) => ({
       savedView: key,
       selectedId: null,
+      selectedProject: null,
       focusTick: s.focusTick + 1,
       editingLayout: false,
       editIsland: null,
@@ -262,6 +278,8 @@ export function applySnapshot(snapshot: OfficeSnapshot): void {
   const state = useOffice.getState();
   const selectedId = state.selectedId;
   const stillThere = selectedId && snapshot.agents.some((a) => a.id === selectedId);
+  const project = state.selectedProject;
+  const projectStillThere = project && snapshot.agents.some((a) => a.project === project);
   const fresh = newFeedItems(state.snapshot, snapshot);
   if (state.settings.sound) {
     // En önemli uyarı çalar; aynı anda birkaç ses üst üste binmesin.
@@ -273,6 +291,7 @@ export function applySnapshot(snapshot: OfficeSnapshot): void {
     ...(fresh.length > 0 ? { feed: appendFeed(state.feed, fresh) } : {}),
     clockOffset: snapshot.now - Date.now(),
     ...(selectedId && !stillThere ? { selectedId: null } : {}),
+    ...(project && !projectStillThere ? { selectedProject: null } : {}),
   });
 }
 

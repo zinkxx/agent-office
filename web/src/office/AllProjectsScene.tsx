@@ -3,6 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import { Vector3 } from 'three';
 import type { Agent, Letter } from '../../../shared/types.ts';
+import { projectDisplayName } from '../projectActivity.ts';
 import { useOffice, useTheme } from '../store.ts';
 import { FlyingLetters } from './FlyingLetters.tsx';
 import { computeLayout, positionOf, type IslandSlot, type OfficeLayout } from './layout.ts';
@@ -66,8 +67,16 @@ function CameraRig({ layout }: { layout: OfficeLayout }) {
   };
 
   const focusCurrent = () => {
-    const { selectedId, snapshot } = useOffice.getState();
+    const { selectedId, selectedProject, snapshot } = useOffice.getState();
     const l = layoutRef.current;
+    const island = selectedProject ? l.islands.find((i) => i.project === selectedProject) : undefined;
+    if (island) {
+      // Tıklanan projenin odasını kadraja al: odanın büyüklüğüne göre uzaklaş.
+      const target = new Vector3(island.x, 0.6, island.z);
+      const k = Math.max(1.6, Math.max(island.w, island.d) / 4.5);
+      flyTo(target.clone().addScaledVector(FOCUS_OFFSET, k), target);
+      return;
+    }
     if (selectedId) {
       // Yanında çizilmeyen (fazladan) yardımcı ajan seçildiyse ana masasına odaklan.
       const agent = snapshot?.agents.find((a) => a.id === selectedId);
@@ -118,10 +127,15 @@ function CameraRig({ layout }: { layout: OfficeLayout }) {
   return null;
 }
 
-/** Bir proje odası: yükseltilmiş zemin, arkada ve yanlarda cam duvar, ışıklı kenar, önde proje adı. */
-function Island({ island }: { island: IslandSlot }) {
+/**
+ * Bir proje odası: yükseltilmiş zemin, arkada ve yanlarda cam duvar, ışıklı kenar, önde proje adı.
+ * Zemine ya da tabelaya tıklayınca proje paneli açılır (masadaki karaktere tıklamak ajanı seçer).
+ */
+function Island({ island, label, selected }: { island: IslandSlot; label: string; selected: boolean }) {
   const o = useTheme().overview;
   const { x, z, w, d } = island;
+  const selectProject = useOffice((s) => s.selectProject);
+  const open = () => selectProject(island.project);
   const wallH = 1.1;
   const t = 0.05;
   const walls: { pos: [number, number, number]; size: [number, number, number] }[] = [
@@ -136,13 +150,30 @@ function Island({ island }: { island: IslandSlot }) {
         radius={0.06}
         position={[0, THEME.islandTop / 2, 0]}
         receiveShadow
+        onClick={(e) => {
+          e.stopPropagation();
+          open();
+        }}
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          document.body.style.cursor = 'pointer';
+        }}
+        onPointerOut={() => {
+          document.body.style.cursor = '';
+        }}
       >
-        <meshStandardMaterial color={o.island} roughness={0.85} metalness={0.05} />
+        <meshStandardMaterial
+          color={o.island}
+          roughness={0.85}
+          metalness={0.05}
+          emissive={o.islandEdge}
+          emissiveIntensity={selected ? 0.12 : 0}
+        />
       </RoundedBox>
-      {/* ön ve arka ışıklı kenar şeritleri */}
+      {/* ön ve arka ışıklı kenar şeritleri (seçili odada kalın) */}
       {[d / 2 + 0.005, -d / 2 - 0.005].map((ez) => (
         <mesh key={ez} position={[0, THEME.islandTop - 0.03, ez]}>
-          <boxGeometry args={[w - 0.1, 0.025, 0.012]} />
+          <boxGeometry args={[w - 0.1, selected ? 0.06 : 0.025, selected ? 0.03 : 0.012]} />
           <meshBasicMaterial color={o.islandEdge} toneMapped={false} />
         </mesh>
       ))}
@@ -176,7 +207,15 @@ function Island({ island }: { island: IslandSlot }) {
         decay={1.4}
       />
       <Label position={[0, THEME.islandTop + 0.05, d / 2 + 0.55]}>
-        <div className="project-sign">{island.project}</div>
+        <button
+          type="button"
+          className={`project-sign clickable${selected ? ' selected' : ''}`}
+          onClick={open}
+          aria-pressed={selected}
+          title={label === island.project ? undefined : island.project}
+        >
+          {label}
+        </button>
       </Label>
     </group>
   );
@@ -186,6 +225,8 @@ function Island({ island }: { island: IslandSlot }) {
 export function AllProjectsScene({ agents, letters }: { agents: Agent[]; letters: Letter[] }) {
   const layout = useMemo(() => computeLayout(agents), [agents]);
   const selectedId = useOffice((s) => s.selectedId);
+  const selectedProject = useOffice((s) => s.selectedProject);
+  const showTitles = useOffice((s) => s.settings.showTitles);
   const lowPower = useOffice((s) => s.settings.lowPower);
   const byId = useMemo(() => new Map(agents.map((a) => [a.id, a])), [agents]);
   const theme = useTheme();
@@ -237,7 +278,12 @@ export function AllProjectsScene({ agents, letters }: { agents: Agent[]; letters
       />
 
       {layout.islands.map((island) => (
-        <Island key={island.project} island={island} />
+        <Island
+          key={island.project}
+          island={island}
+          label={projectDisplayName(agents, island.project, showTitles)}
+          selected={selectedProject === island.project}
+        />
       ))}
       {layout.desks.map((desk) => {
         const agent = byId.get(desk.agentId);

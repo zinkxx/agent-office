@@ -164,7 +164,10 @@ export function Office() {
         gl={{ antialias: false, powerPreference: 'high-performance' }}
         onPointerMissed={(e) => {
           // Boşluğa çift tıklayınca tüm ofise dön.
-          if (e.detail === 2) select(null);
+          if (e.detail === 2) {
+            select(null);
+            useOffice.getState().selectProject(null);
+          }
         }}
       >
         <FrameDriver lowPower={lowPower} />

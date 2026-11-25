@@ -61,6 +61,16 @@ const tr = {
   'detail.uptime': 'Çalışma süresi',
   'detail.recent': 'Son işlemler',
 
+  'projectPanel.aria': 'Proje ayrıntıları',
+  'projectPanel.close': 'Proje panelini kapat',
+  'projectPanel.kicker': 'Proje',
+  'projectPanel.sessions': 'Oturumlar',
+  'projectPanel.helpers': 'Yardımcılar',
+  'projectPanel.timeline': 'İşlemler',
+  'projectPanel.lastActive': 'Son etkinlik',
+  'projectPanel.empty': 'Bu projede henüz kayıtlı işlem yok.',
+  'projectPanel.openProject': 'Bu projenin ofisini aç',
+
   'feed.aria': 'Canlı işlem akışı',
 
   'loading.demo': 'Demo ofis hazırlanıyor…',
@@ -290,6 +300,16 @@ const en: Record<MessageKey, string> = {
   'detail.type': 'Type',
   'detail.uptime': 'Running for',
   'detail.recent': 'Recent actions',
+
+  'projectPanel.aria': 'Project details',
+  'projectPanel.close': 'Close project panel',
+  'projectPanel.kicker': 'Project',
+  'projectPanel.sessions': 'Sessions',
+  'projectPanel.helpers': 'Helpers',
+  'projectPanel.timeline': 'Activity',
+  'projectPanel.lastActive': 'Last active',
+  'projectPanel.empty': 'No recorded activity in this project yet.',
+  'projectPanel.openProject': 'Open this project’s office',
 
   'feed.aria': 'Live activity feed',
 
